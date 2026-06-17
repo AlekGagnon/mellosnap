@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Calque_1" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 646.79 988.45">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        stroke: #000;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-3 {
+        font-family: MyriadPro-Regular, 'Myriad Pro';
+        font-size: 45.45px;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="-102.1" y="359.08" width="948.35" height="271.52" transform="translate(956.91 291.67) rotate(107.78)"/>
+  <rect class="cls-2" x="381.31" y="65.02" width="194.77" height="194.77" transform="translate(72.47 -138.44) rotate(17.78)"/>
+  <text class="cls-3" transform="translate(444.37 165.4) rotate(17.78)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="310.23" y="286.64" width="194.77" height="194.77" transform="translate(136.76 -106.14) rotate(17.78)"/>
+  <text class="cls-3" transform="translate(373.29 387.02) rotate(17.78)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="239.15" y="508.27" width="194.77" height="194.77" transform="translate(201.05 -73.84) rotate(17.78)"/>
+  <text class="cls-3" transform="translate(302.21 608.65) rotate(17.78)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="168.07" y="729.89" width="194.77" height="194.77" transform="translate(265.34 -41.55) rotate(17.78)"/>
+  <text class="cls-3" transform="translate(231.12 830.27) rotate(17.78)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-1" x="-196.62" y="351.53" width="948.35" height="271.52" transform="translate(793.78 268.2) rotate(96.67)"/>
+  <rect class="cls-2" x="220.71" y="43.15" width="194.77" height="194.77" transform="translate(18.47 -35.99) rotate(6.67)"/>
+  <text class="cls-3" transform="translate(284.99 150.09) rotate(6.67)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="193.69" y="274.32" width="194.77" height="194.77" transform="translate(45.14 -31.29) rotate(6.67)"/>
+  <text class="cls-3" transform="translate(257.96 381.26) rotate(6.67)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="166.66" y="505.49" width="194.77" height="194.77" transform="translate(71.8 -26.58) rotate(6.67)"/>
+  <text class="cls-3" transform="translate(230.93 612.43) rotate(6.67)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="139.63" y="736.66" width="194.77" height="194.77" transform="translate(98.46 -21.88) rotate(6.67)"/>
+  <text class="cls-3" transform="translate(203.9 843.6) rotate(6.67)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-1" x="-337.92" y="347.13" width="948.35" height="271.52" transform="translate(619.15 346.63) rotate(90)"/>
+  <rect class="cls-2" x="38.87" y="36.39" width="194.77" height="194.77"/>
+  <text class="cls-3" transform="translate(104.49 147.11)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="38.87" y="269.14" width="194.77" height="194.77"/>
+  <text class="cls-3" transform="translate(104.49 379.86)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="38.87" y="501.88" width="194.77" height="194.77"/>
+  <text class="cls-3" transform="translate(104.49 612.6)"><tspan x="0" y="0">3x3</tspan></text>
+  <rect class="cls-2" x="38.87" y="734.63" width="194.77" height="194.77"/>
+  <text class="cls-3" transform="translate(104.49 845.35)"><tspan x="0" y="0">3x3</tspan></text>
+</svg>
