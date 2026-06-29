@@ -33,19 +33,19 @@ class _ChooseFormatPageState extends State<ChooseFormatPage> {
     _FormatOption(
       title: 'Standard print',
       subtitle: '4x6 - glossy',
-      price: 22,
+      price: 12.99,
       iconAsset: 'lib/images/icones_standard.svg',
     ),
     _FormatOption(
       title: 'Polaroid',
       subtitle: '3x3 - glossy',
-      price: 18,
+      price: 15.99,
       iconAsset: 'lib/images/icones_polaroid.svg',
     ),
     _FormatOption(
       title: 'strips',
       subtitle: '4 photos each',
-      price: 20,
+      price: 14.99,
       iconAsset: 'lib/images/icones_strip.svg',
     ),
   ];
@@ -165,7 +165,7 @@ class _FormatOption {
 
   final String title;
   final String subtitle;
-  final int price;
+  final double price;
   final String iconAsset;
 }
 

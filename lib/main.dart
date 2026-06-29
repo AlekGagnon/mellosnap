@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/auth_gate.dart';
+import 'services/payment_service.dart';
 
 /// Initialized at startup (same pattern as the reference `photo` project).
 List<CameraDescription> cameras = [];
@@ -46,6 +47,8 @@ Future<void> main() async {
   } on CameraException {
     cameras = [];
   }
+
+  await PaymentService.initialize();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

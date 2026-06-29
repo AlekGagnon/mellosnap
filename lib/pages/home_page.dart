@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,17 +9,70 @@ import '../services/roll_repository.dart';
 import 'camera_page.dart';
 import 'profile_page.dart';
 
+class _HomeColors {
+  static const accent = Color(0xFFE8A399);
+  static const accentDeep = Color(0xFFD8897E);
+  static const ink = Color(0xFF3D2F33);
+  static const muted = Color(0xFF7A6569);
+}
+
 /// Landing après authentification : présentation du produit et CTA caméra.
 ///
-/// Navigation : « Get started » → [CameraPage] (le rouleau de 24 photos).
-class HomePage extends StatelessWidget {
+/// Navigation : « Get started » → nouveau rouleau ; « Continue roll » → reprise.
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  // Palette locale de la page (dégradé + accents marketing).
-  static const _accent = Color(0xFFE8A399);
-  static const _accentDeep = Color(0xFFD8897E);
-  static const _ink = Color(0xFF3D2F33);
-  static const _muted = Color(0xFF7A6569);
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<String> _activePhotoPaths = [];
+  bool _loadingRoll = true;
+
+  bool get _hasIncompleteRoll =>
+      RollRepository.isRollIncomplete(_activePhotoPaths);
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadActiveRoll());
+  }
+
+  Future<void> _loadActiveRoll() async {
+    final userId = AuthService.instance.currentUserId;
+    if (userId == null) {
+      if (mounted) setState(() => _loadingRoll = false);
+      return;
+    }
+
+    final paths = await RollRepository.loadActiveRoll(userId);
+    if (!mounted) return;
+    setState(() {
+      _activePhotoPaths = paths;
+      _loadingRoll = false;
+    });
+  }
+
+  Future<void> _openCamera({List<String>? initialPhotoPaths}) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => CameraPage(
+          initialPhotoPaths: initialPhotoPaths ?? const [],
+        ),
+      ),
+    );
+    if (mounted) await _loadActiveRoll();
+  }
+
+  Future<void> _startNewRoll() async {
+    final userId = AuthService.instance.currentUserId;
+    if (userId != null) {
+      await RollRepository.clearActiveRoll(userId);
+    }
+    if (!mounted) return;
+    await _openCamera();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,17 +92,18 @@ class HomePage extends StatelessWidget {
                   const Spacer(flex: 3),
                   const _FeatureRow(),
                   const SizedBox(height: 28),
+                  if (!_loadingRoll && _hasIncompleteRoll) ...[
+                    _ContinueRollButton(
+                      photoCount: _activePhotoPaths.length,
+                      onPressed: () => unawaited(
+                        _openCamera(initialPhotoPaths: _activePhotoPaths),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   _StartButton(
-                    onPressed: () async {
-                      final userId = AuthService.instance.currentUserId;
-                      if (userId != null) {
-                        await RollRepository.clearActiveRoll(userId);
-                      }
-                      if (!context.mounted) return;
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const CameraPage()),
-                      );
-                    },
+                    label: _hasIncompleteRoll ? 'Start a new roll' : 'Get started',
+                    onPressed: () => unawaited(_startNewRoll()),
                   ),
                 ],
               ),
@@ -82,12 +138,12 @@ class _HomeBackground extends StatelessWidget {
           Positioned(
             top: -80,
             right: -40,
-            child: _GlowOrb(size: 220, color: HomePage._accent.withValues(alpha: 0.35)),
+            child: _GlowOrb(size: 220, color: _HomeColors.accent.withValues(alpha: 0.35)),
           ),
           Positioned(
             bottom: 120,
             left: -60,
-            child: _GlowOrb(size: 180, color: HomePage._accentDeep.withValues(alpha: 0.22)),
+            child: _GlowOrb(size: 180, color: _HomeColors.accentDeep.withValues(alpha: 0.22)),
           ),
           Positioned(
             top: MediaQuery.sizeOf(context).height * 0.35,
@@ -139,7 +195,7 @@ class _HomeHeader extends StatelessWidget {
           color: Colors.white.withValues(alpha: 0.75),
           shape: const CircleBorder(side: BorderSide(color: Colors.white)),
           elevation: 0,
-          shadowColor: HomePage._accent.withValues(alpha: 0.15),
+          shadowColor: _HomeColors.accent.withValues(alpha: 0.15),
           child: InkWell(
             onTap: () {
               Navigator.of(context).push(
@@ -154,7 +210,7 @@ class _HomeHeader extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: HomePage._accent.withValues(alpha: 0.15),
+                    color: _HomeColors.accent.withValues(alpha: 0.15),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -162,7 +218,7 @@ class _HomeHeader extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.person_outline_rounded,
-                color: HomePage._accentDeep,
+                color: _HomeColors.accentDeep,
                 size: 22,
               ),
             ),
@@ -186,7 +242,7 @@ class _HeroSection extends StatelessWidget {
           style: GoogleFonts.lora(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: HomePage._muted,
+            color: _HomeColors.muted,
             letterSpacing: 0.2,
           ),
         ),
@@ -197,7 +253,7 @@ class _HeroSection extends StatelessWidget {
           style: GoogleFonts.lora(
             fontSize: 48,
             fontWeight: FontWeight.w700,
-            color: HomePage._ink,
+            color: _HomeColors.ink,
             height: 1.05,
             letterSpacing: -1,
           ),
@@ -208,7 +264,7 @@ class _HeroSection extends StatelessWidget {
           style: GoogleFonts.lora(
             fontSize: 48,
             fontWeight: FontWeight.w700,
-            color: HomePage._ink,
+            color: _HomeColors.ink,
             height: 1.05,
             letterSpacing: -1,
           ),
@@ -216,7 +272,7 @@ class _HeroSection extends StatelessWidget {
         // Dernier mot du hero en dégradé saumon.
         ShaderMask(
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [HomePage._accentDeep, HomePage._accent],
+            colors: [_HomeColors.accentDeep, _HomeColors.accent],
           ).createShader(bounds),
           child: Text(
             'Receive it.',
@@ -239,7 +295,7 @@ class _HeroSection extends StatelessWidget {
             border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
             boxShadow: [
               BoxShadow(
-                color: HomePage._accent.withValues(alpha: 0.12),
+                color: _HomeColors.accent.withValues(alpha: 0.12),
                 blurRadius: 24,
                 offset: const Offset(0, 12),
               ),
@@ -251,7 +307,7 @@ class _HeroSection extends StatelessWidget {
             style: GoogleFonts.lora(
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: HomePage._muted,
+              color: _HomeColors.muted,
               height: 1.55,
             ),
           ),
@@ -295,7 +351,7 @@ class _FeatureChip extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, size: 20, color: HomePage._accentDeep),
+          Icon(icon, size: 20, color: _HomeColors.accentDeep),
           const SizedBox(height: 6),
           Text(
             label,
@@ -303,7 +359,7 @@ class _FeatureChip extends StatelessWidget {
             style: GoogleFonts.lora(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: HomePage._ink,
+              color: _HomeColors.ink,
               height: 1.2,
             ),
           ),
@@ -314,9 +370,13 @@ class _FeatureChip extends StatelessWidget {
 }
 
 class _StartButton extends StatelessWidget {
+  final String label;
   final VoidCallback onPressed;
 
-  const _StartButton({required this.onPressed});
+  const _StartButton({
+    required this.label,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -324,11 +384,11 @@ class _StartButton extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
-          colors: [HomePage._accentDeep, HomePage._accent],
+          colors: [_HomeColors.accentDeep, _HomeColors.accent],
         ),
         boxShadow: [
           BoxShadow(
-            color: HomePage._accentDeep.withValues(alpha: 0.45),
+            color: _HomeColors.accentDeep.withValues(alpha: 0.45),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -346,7 +406,7 @@ class _StartButton extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Get started',
+                  label,
                   style: GoogleFonts.lora(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -359,6 +419,37 @@ class _StartButton extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ContinueRollButton extends StatelessWidget {
+  const _ContinueRollButton({
+    required this.photoCount,
+    required this.onPressed,
+  });
+
+  final int photoCount;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(58),
+        side: const BorderSide(color: _HomeColors.accentDeep, width: 1.5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        foregroundColor: _HomeColors.accentDeep,
+      ),
+      child: Text(
+        'Continue roll ($photoCount / ${CameraPage.maxPhotos})',
+        style: GoogleFonts.lora(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.2,
         ),
       ),
     );

@@ -47,4 +47,16 @@ class OrderService {
 
     return row['id'] as String;
   }
+
+  /// Marque la commande comme payée après succès Stripe (côté client).
+  static Future<void> markOrderPaid({
+    required String orderId,
+    String? paymentIntentId,
+  }) async {
+    final update = <String, dynamic>{'status': 'paid'};
+    if (paymentIntentId != null) {
+      update['stripe_payment_intent_id'] = paymentIntentId;
+    }
+    await _client.from('orders').update(update).eq('id', orderId);
+  }
 }

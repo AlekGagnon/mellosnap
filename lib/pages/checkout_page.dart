@@ -6,6 +6,7 @@ import '../models/order_checkout.dart';
 import '../services/auth_service.dart';
 import '../services/edge_function_service.dart';
 import '../services/order_service.dart';
+import '../services/payment_service.dart';
 import '../services/profile_service.dart';
 import '../services/roll_repository.dart';
 import '../services/roll_storage_service.dart';
@@ -105,8 +106,129 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
-    setState(() => _isProcessing = true);
+    if (!PaymentService.isConfigured) {
+      setState(() {
+        _paymentError =
+            'Payments are not configured yet. Add STRIPE_PUBLISHABLE_KEY to .env '
+            '(see STRIPE_SETUP.md).';
+      });
+      return;
+    }
 
+    setState(() => _isProcessing = true);
+    _showLoadingDialog('Preparing your order...');
+
+    String? orderId;
+    String? paymentIntentId;
+
+    try {
+      final userId = AuthService.instance.currentUserId;
+      if (userId == null) {
+        throw Exception('You must be signed in to continue.');
+      }
+
+      await ProfileService.upsertShippingAddress(
+        userId: userId,
+        name: _nameController.text,
+        address: _addressController.text,
+        city: _cityController.text,
+        province: _province,
+        postalCode: _postalController.text,
+      );
+
+      orderId = await OrderService.upsertPendingOrder(
+        userId: userId,
+        rollId: widget.order.rollId,
+        format: widget.order.formatApiValue,
+        amount: widget.order.total,
+        taxes: widget.order.taxes,
+      );
+
+      await RollStorageService.uploadActiveRoll(
+        userId: userId,
+        rollId: widget.order.rollId,
+      );
+
+      final paymentData = await EdgeFunctionService.instance.createPaymentIntent(
+        orderId: orderId,
+      );
+      final clientSecret = paymentData['clientSecret'] as String?;
+      paymentIntentId = paymentData['paymentIntentId'] as String?;
+      if (clientSecret == null || clientSecret.isEmpty) {
+        throw Exception('Could not start payment.');
+      }
+
+      if (mounted) Navigator.of(context).pop(); // close loading before sheet
+
+      final paymentResult = await PaymentService.presentPaymentSheet(
+        clientSecret: clientSecret,
+      );
+
+      switch (paymentResult) {
+        case PaymentCancelled():
+          return;
+        case PaymentFailure(:final message):
+          if (mounted) {
+            setState(() => _paymentError = message);
+          }
+          return;
+        case PaymentSuccess():
+          break;
+      }
+
+      await OrderService.markOrderPaid(
+        orderId: orderId,
+        paymentIntentId: paymentIntentId,
+      );
+
+      if (!mounted) return;
+      _showLoadingDialog('Fulfilling your order...');
+
+      final data = await EdgeFunctionService.instance.processMediaclipOrder(
+        rollId: widget.order.rollId,
+        format: widget.order.formatApiValue,
+        amount: widget.order.total,
+        orderId: orderId,
+      );
+
+      final hubOrderId = data['hubOrderId']?.toString();
+      if (hubOrderId != null && hubOrderId.isNotEmpty) {
+        await EdgeFunctionService.instance.releaseMediaclipOrder(
+          hubOrderId: hubOrderId,
+          orderId: orderId,
+        );
+      }
+
+      await RollRepository.clearActiveRoll(userId);
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // close loading dialog
+
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => OrderConfirmationPage(
+            order: widget.order,
+            orderId: orderId!,
+            hubOrderId: hubOrderId,
+            receiptEmail: AuthService.instance.currentUser?.email ?? '',
+            deliverySummary: _deliverySummary,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop(); // close loading dialog if open
+      }
+      if (!mounted) return;
+      setState(() {
+        _paymentError = e.toString().replaceFirst('Exception: ', '');
+      });
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  void _showLoadingDialog(String message) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -126,7 +248,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               const SizedBox(width: 20),
               Expanded(
                 child: Text(
-                  'Processing your order...',
+                  message,
                   style: GoogleFonts.lora(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -139,75 +261,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
       ),
     );
-
-    try {
-      final userId = AuthService.instance.currentUserId;
-      if (userId == null) {
-        throw Exception('You must be signed in to continue.');
-      }
-
-      await ProfileService.upsertShippingAddress(
-        userId: userId,
-        name: _nameController.text,
-        address: _addressController.text,
-        city: _cityController.text,
-        province: _province,
-        postalCode: _postalController.text,
-      );
-
-      final orderId = await OrderService.upsertPendingOrder(
-        userId: userId,
-        rollId: widget.order.rollId,
-        format: widget.order.formatApiValue,
-        amount: widget.order.total,
-        taxes: widget.order.taxes,
-      );
-
-      await RollStorageService.uploadActiveRoll(
-        userId: userId,
-        rollId: widget.order.rollId,
-      );
-
-      final data = await EdgeFunctionService.instance.processMediaclipOrder(
-        rollId: widget.order.rollId,
-        format: widget.order.formatApiValue,
-        amount: widget.order.total,
-        orderId: orderId,
-      );
-
-      if (!mounted) return;
-      Navigator.of(context).pop(); // close loading dialog
-
-      final hubOrderId = data['hubOrderId']?.toString();
-      await RollRepository.clearActiveRoll(userId);
-
-      if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => OrderConfirmationPage(
-            order: widget.order,
-            orderId: orderId,
-            hubOrderId: hubOrderId,
-            receiptEmail: AuthService.instance.currentUser?.email ?? '',
-            deliverySummary: _deliverySummary,
-          ),
-        ),
-      );
-    } catch (e) {
-      if (mounted && Navigator.of(context).canPop()) {
-        Navigator.of(context).pop(); // close loading dialog
-      }
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: const Color(0xFFC05040),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
-    }
   }
 
   @override

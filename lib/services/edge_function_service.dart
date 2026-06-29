@@ -8,6 +8,29 @@ class EdgeFunctionService {
 
   SupabaseClient get _supabase => Supabase.instance.client;
 
+  /// Crée un PaymentIntent Stripe pour une commande pending (client secret).
+  Future<Map<String, dynamic>> createPaymentIntent({
+    required String orderId,
+  }) async {
+    final response = await _supabase.functions.invoke(
+      'create-payment-intent',
+      body: {'orderId': orderId},
+    );
+
+    if (response.status != 200) {
+      final data = response.data;
+      final message = data is Map
+          ? data['error']?.toString() ?? data.toString()
+          : data?.toString();
+      throw Exception(message ?? 'Could not start payment');
+    }
+
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    throw Exception('Unexpected payment response');
+  }
+
   /// Étapes 1–6 : crée la commande Mediaclip (release=false, en attente de paiement).
   Future<Map<String, dynamic>> processMediaclipOrder({
     required String rollId,

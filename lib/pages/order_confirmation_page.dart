@@ -1,11 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../components/mello_logo.dart';
 import '../models/order_checkout.dart';
 import '../services/auth_service.dart';
-import '../services/edge_function_service.dart';
 import '../services/roll_repository.dart';
 import 'home_page.dart';
 
@@ -17,7 +15,7 @@ const _muted = Color(0xFF6B5B5F);
 const _border = Color(0xFF2A2628);
 
 /// Confirmation après paiement (commande validée).
-class OrderConfirmationPage extends StatefulWidget {
+class OrderConfirmationPage extends StatelessWidget {
   const OrderConfirmationPage({
     super.key,
     required this.order,
@@ -34,47 +32,8 @@ class OrderConfirmationPage extends StatefulWidget {
   final String? hubOrderId;
 
   @override
-  State<OrderConfirmationPage> createState() => _OrderConfirmationPageState();
-}
-
-class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
-  bool _isReleasing = false;
-
-  Future<void> _testReleaseOrder() async {
-    final hubOrderId = widget.hubOrderId;
-    if (hubOrderId == null || hubOrderId.isEmpty) return;
-
-    setState(() => _isReleasing = true);
-    try {
-      await EdgeFunctionService.instance.releaseMediaclipOrder(
-        hubOrderId: hubOrderId,
-        orderId: widget.orderId,
-      );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Order released! Printing started.'),
-          backgroundColor: Color(0xFF5E8A6A),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: const Color(0xFFC05040),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isReleasing = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final order = widget.order;
+    final order = this.order;
     return Scaffold(
       backgroundColor: _bg,
       body: SafeArea(
@@ -115,7 +74,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
               ),
               const SizedBox(height: 14),
               Text(
-                'Order #${widget.orderId} confirmed. Receipt sent to ${widget.receiptEmail}',
+                'Order #$orderId confirmed. Receipt sent to $receiptEmail',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.lora(
                   fontSize: 15,
@@ -124,11 +83,10 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                   height: 1.45,
                 ),
               ),
-              if (widget.hubOrderId != null &&
-                  widget.hubOrderId!.isNotEmpty) ...[
+              if (hubOrderId != null && hubOrderId!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  'Mediaclip ref: ${widget.hubOrderId}',
+                  'Mediaclip ref: $hubOrderId',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.lora(
                     fontSize: 14,
@@ -153,7 +111,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                     ),
                     _ConfirmRow(
                       label: 'Delivery',
-                      value: widget.deliverySummary,
+                      value: deliverySummary,
                     ),
                     _ConfirmRow(
                       label: 'Charged',
@@ -163,38 +121,17 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                   ],
                 ),
               ),
-              if (kDebugMode &&
-                  widget.hubOrderId != null &&
-                  widget.hubOrderId!.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _isReleasing ? null : _testReleaseOrder,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
-                  child: _isReleasing
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          'TEST: Release order (simulate payment)',
-                          style: GoogleFonts.lora(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+              const SizedBox(height: 16),
+              Text(
+                'Payment received. Your prints are being prepared.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.lora(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: _muted,
+                  height: 1.45,
                 ),
-              ],
+              ),
               const SizedBox(height: 32),
               DecoratedBox(
                 decoration: BoxDecoration(

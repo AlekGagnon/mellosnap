@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../pages/camera_page.dart';
 import '../pages/home_page.dart';
 import '../pages/sign_in_page.dart';
-import '../services/roll_repository.dart';
 
 /// Route initiale selon session Supabase et état du rouleau actif.
 class AuthGate extends StatelessWidget {
@@ -56,10 +54,7 @@ class _AuthenticatedRouterState extends State<_AuthenticatedRouter> {
   }
 
   Future<Widget> _resolveDestination() async {
-    final paths = await RollRepository.loadActiveRoll(widget.userId);
-    if (RollRepository.isRollIncomplete(paths)) {
-      return CameraPage(initialPhotoPaths: paths);
-    }
+    // Always land on home; user can resume an in-progress roll from there.
     return const HomePage();
   }
 

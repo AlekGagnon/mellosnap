@@ -36,6 +36,25 @@ class RollRepository {
     return File(p.join(dir.path, _manifestFile));
   }
 
+  /// Sauvegarde une photo JPEG (bytes) et met à jour le manifeste.
+  static Future<String> savePhotoFromBytes({
+    required String userId,
+    required List<int> bytes,
+    required int photoIndex,
+    required List<String> existingPaths,
+  }) async {
+    final dir = await _activeDirectory(userId);
+    final filePath = p.join(
+      dir.path,
+      'photo_${photoIndex}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+    await File(filePath).writeAsBytes(bytes);
+
+    final updated = [...existingPaths, filePath];
+    await _writeManifest(userId, updated);
+    return filePath;
+  }
+
   /// Sauvegarde une photo et met à jour le manifeste.
   static Future<String> savePhoto({
     required String userId,
