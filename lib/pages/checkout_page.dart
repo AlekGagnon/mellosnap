@@ -44,6 +44,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final _cityController = TextEditingController();
   final _postalController = TextEditingController();
   final _countryController = TextEditingController(text: 'Canada');
+  final _billingNameController = TextEditingController();
+  final _billingAddressController = TextEditingController();
+  final _billingCityController = TextEditingController();
+  final _billingPostalController = TextEditingController();
+  final _billingCountryController = TextEditingController(text: 'Canada');
 
   static const _provinces = [
     'Quebec',
@@ -54,9 +59,64 @@ class _CheckoutPageState extends State<CheckoutPage> {
   ];
 
   String _province = _provinces.first;
+  String _billingProvince = _provinces.first;
+  bool _billingSameAsShipping = true;
+  bool _isLoadingProfile = true;
   bool _isProcessing = false;
   bool _autoValidate = false;
   String? _paymentError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedProfile();
+  }
+
+  String _matchProvince(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) return _provinces.first;
+    if (_provinces.contains(trimmed)) return trimmed;
+    final lower = trimmed.toLowerCase();
+    for (final province in _provinces) {
+      if (province.toLowerCase() == lower) return province;
+    }
+    return 'Other';
+  }
+
+  Future<void> _loadSavedProfile() async {
+    final userId = AuthService.instance.currentUserId;
+    if (userId == null) {
+      if (mounted) setState(() => _isLoadingProfile = false);
+      return;
+    }
+
+    try {
+      final profile = await ProfileService.fetchCheckoutProfile(userId);
+      if (!mounted || profile == null || !profile.hasShipping) return;
+
+      setState(() {
+        _nameController.text = profile.name!.trim();
+        _addressController.text = profile.address!.trim();
+        _cityController.text = profile.city!.trim();
+        _postalController.text = profile.postalCode!.trim().toUpperCase();
+        _province = _matchProvince(profile.province);
+        _billingSameAsShipping = profile.billingSameAsShipping;
+
+        if (!_billingSameAsShipping && profile.hasBilling) {
+          _billingNameController.text = profile.billingName!.trim();
+          _billingAddressController.text = profile.billingAddress!.trim();
+          _billingCityController.text = profile.billingCity!.trim();
+          _billingPostalController.text =
+              profile.billingPostalCode!.trim().toUpperCase();
+          _billingProvince = _matchProvince(profile.billingProvince);
+        }
+      });
+    } finally {
+      if (mounted) setState(() => _isLoadingProfile = false);
+    }
+  }
+
+  bool get _formEnabled => !_isProcessing && !_isLoadingProfile;
 
   @override
   void dispose() {
@@ -66,20 +126,45 @@ class _CheckoutPageState extends State<CheckoutPage> {
     _cityController.dispose();
     _postalController.dispose();
     _countryController.dispose();
+    _billingNameController.dispose();
+    _billingAddressController.dispose();
+    _billingCityController.dispose();
+    _billingPostalController.dispose();
+    _billingCountryController.dispose();
     super.dispose();
   }
 
-  String? _required(String? value, String fieldName) {
+  String? _requiredShipping(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName is required for shipping.';
     }
     return null;
   }
 
-  String? _validatePostalCode(String? value) {
+  String? _requiredBilling(String? value, String fieldName) {
+    if (_billingSameAsShipping) return null;
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required for billing.';
+    }
+    return null;
+  }
+
+  String? _validateShippingPostalCode(String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
       return 'Postal code is required for shipping.';
+    }
+    if (!_postalCodePattern.hasMatch(trimmed)) {
+      return 'Enter a valid Canadian postal code (e.g. H2X 1Y4).';
+    }
+    return null;
+  }
+
+  String? _validateBillingPostalCode(String? value) {
+    if (_billingSameAsShipping) return null;
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return 'Postal code is required for billing.';
     }
     if (!_postalCodePattern.hasMatch(trimmed)) {
       return 'Enter a valid Canadian postal code (e.g. H2X 1Y4).';
@@ -127,13 +212,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
         throw Exception('You must be signed in to continue.');
       }
 
-      await ProfileService.upsertShippingAddress(
+      await ProfileService.upsertCheckoutAddresses(
         userId: userId,
         name: _nameController.text,
         address: _addressController.text,
         city: _cityController.text,
         province: _province,
         postalCode: _postalController.text,
+        billingSameAsShipping: _billingSameAsShipping,
+        billingName: _billingNameController.text,
+        billingAddress: _billingAddressController.text,
+        billingCity: _billingCityController.text,
+        billingProvince: _billingProvince,
+        billingPostalCode: _billingPostalController.text,
       );
 
       orderId = await OrderService.upsertPendingOrder(
@@ -308,70 +399,82 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
+                          if (_isLoadingProfile)
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: LinearProgressIndicator(
+                                minHeight: 2,
+                                color: _accentDeep,
+                                backgroundColor: Color(0xFFE8D8D4),
+                              ),
+                            ),
                           _SectionCard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _CheckoutField(
-                                  label: 'Full name',
-                                  controller: _nameController,
-                                  enabled: !_isProcessing,
-                                  textInputAction: TextInputAction.next,
-                                  validator: (v) => _required(v, 'Full name'),
-                                ),
-                                const SizedBox(height: 14),
-                                _CheckoutField(
-                                  label: 'Address',
-                                  controller: _addressController,
-                                  enabled: !_isProcessing,
-                                  textInputAction: TextInputAction.next,
-                                  validator: (v) => _required(v, 'Address'),
-                                ),
-                                const SizedBox(height: 14),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: _CheckoutField(
-                                        label: 'City',
-                                        controller: _cityController,
-                                        enabled: !_isProcessing,
-                                        textInputAction: TextInputAction.next,
-                                        validator: (v) => _required(v, 'City'),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _CheckoutField(
-                                        label: 'Postal code',
-                                        controller: _postalController,
-                                        enabled: !_isProcessing,
-                                        textInputAction: TextInputAction.next,
-                                        textCapitalization:
-                                            TextCapitalization.characters,
-                                        validator: _validatePostalCode,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 14),
-                                _CheckoutField(
-                                  label: 'Country',
-                                  controller: _countryController,
-                                  enabled: !_isProcessing,
-                                  textInputAction: TextInputAction.next,
-                                  validator: (v) => _required(v, 'Country'),
-                                ),
-                                const SizedBox(height: 14),
-                                _ProvinceField(
-                                  value: _province,
-                                  provinces: _provinces,
-                                  enabled: !_isProcessing,
-                                  onChanged: (v) => setState(() => _province = v),
-                                ),
-                              ],
+                            child: _AddressFieldsCard(
+                              nameController: _nameController,
+                              addressController: _addressController,
+                              cityController: _cityController,
+                              postalController: _postalController,
+                              countryController: _countryController,
+                              province: _province,
+                              provinces: _provinces,
+                              enabled: _formEnabled,
+                              onProvinceChanged: (v) =>
+                                  setState(() => _province = v),
+                              requiredValidator: _requiredShipping,
+                              postalValidator: _validateShippingPostalCode,
                             ),
                           ),
+                          const SizedBox(height: 20),
+                          CheckboxListTile(
+                            value: _billingSameAsShipping,
+                            onChanged: _formEnabled
+                                ? (value) {
+                                    setState(() {
+                                      _billingSameAsShipping = value ?? true;
+                                    });
+                                  }
+                                : null,
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            activeColor: _accentDeep,
+                            title: Text(
+                              'Billing address same as delivery',
+                              style: GoogleFonts.lora(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: _ink,
+                              ),
+                            ),
+                          ),
+                          if (!_billingSameAsShipping) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              'Billing address',
+                              style: GoogleFonts.lora(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                                color: _ink,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _SectionCard(
+                              child: _AddressFieldsCard(
+                                nameController: _billingNameController,
+                                addressController: _billingAddressController,
+                                cityController: _billingCityController,
+                                postalController: _billingPostalController,
+                                countryController: _billingCountryController,
+                                province: _billingProvince,
+                                provinces: _provinces,
+                                enabled: _formEnabled,
+                                onProvinceChanged: (v) =>
+                                    setState(() => _billingProvince = v),
+                                requiredValidator: _requiredBilling,
+                                postalValidator: _validateBillingPostalCode,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 28),
                           Text(
                             'Order Summary',
@@ -432,7 +535,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           const SizedBox(height: 28),
                           _PayButton(
                             total: order.total,
-                            enabled: !_isProcessing,
+                            enabled: _formEnabled,
                             onPressed: _confirmAndPay,
                           ),
                           const SizedBox(height: 14),
@@ -555,6 +658,99 @@ class _SectionCard extends StatelessWidget {
         border: Border.all(color: _border, width: 1.2),
       ),
       child: child,
+    );
+  }
+}
+
+class _AddressFieldsCard extends StatelessWidget {
+  const _AddressFieldsCard({
+    required this.nameController,
+    required this.addressController,
+    required this.cityController,
+    required this.postalController,
+    required this.countryController,
+    required this.province,
+    required this.provinces,
+    required this.enabled,
+    required this.onProvinceChanged,
+    required this.requiredValidator,
+    required this.postalValidator,
+  });
+
+  final TextEditingController nameController;
+  final TextEditingController addressController;
+  final TextEditingController cityController;
+  final TextEditingController postalController;
+  final TextEditingController countryController;
+  final String province;
+  final List<String> provinces;
+  final bool enabled;
+  final ValueChanged<String> onProvinceChanged;
+  final String? Function(String? value, String fieldName) requiredValidator;
+  final String? Function(String? value) postalValidator;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _CheckoutField(
+          label: 'Full name',
+          controller: nameController,
+          enabled: enabled,
+          textInputAction: TextInputAction.next,
+          validator: (v) => requiredValidator(v, 'Full name'),
+        ),
+        const SizedBox(height: 14),
+        _CheckoutField(
+          label: 'Address',
+          controller: addressController,
+          enabled: enabled,
+          textInputAction: TextInputAction.next,
+          validator: (v) => requiredValidator(v, 'Address'),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _CheckoutField(
+                label: 'City',
+                controller: cityController,
+                enabled: enabled,
+                textInputAction: TextInputAction.next,
+                validator: (v) => requiredValidator(v, 'City'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _CheckoutField(
+                label: 'Postal code',
+                controller: postalController,
+                enabled: enabled,
+                textInputAction: TextInputAction.next,
+                textCapitalization: TextCapitalization.characters,
+                validator: postalValidator,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _CheckoutField(
+          label: 'Country',
+          controller: countryController,
+          enabled: enabled,
+          textInputAction: TextInputAction.next,
+          validator: (v) => requiredValidator(v, 'Country'),
+        ),
+        const SizedBox(height: 14),
+        _ProvinceField(
+          value: province,
+          provinces: provinces,
+          enabled: enabled,
+          onChanged: onProvinceChanged,
+        ),
+      ],
     );
   }
 }

@@ -30,6 +30,43 @@ function productIdForFormat(format: string): string {
   }
 }
 
+function trimField(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function buildAddressBlock(
+  deliverTo: string,
+  street: string,
+  city: string,
+  state: string,
+  postalCode: string,
+  email: string,
+) {
+  return {
+    address: {
+      postalAddress: {
+        deliverTo,
+        street,
+        city,
+        state,
+        postalCode,
+        country: {
+          isoCountryCode: 'CA',
+          value: 'Canada',
+        },
+      },
+      email: { value: email },
+    },
+  }
+}
+
+function firstMissingField(fields: Record<string, string>): string | null {
+  for (const [key, value] of Object.entries(fields)) {
+    if (!value) return key
+  }
+  return null
+}
+
 Deno.serve(async (req) => {
   let projectId: string | undefined
 
@@ -244,7 +281,7 @@ Deno.serve(async (req) => {
     }
     log('STEP-5', 'Add to cart OK')
 
-    // STEP 6 — Load profile for shipping
+    // STEP 6 — Load profile for shipping and billing
     log('STEP-6', 'Loading profile')
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -252,17 +289,82 @@ Deno.serve(async (req) => {
       .eq('id', user.id)
       .single()
 
-    if (profileError) {
-      log('STEP-6', 'Profile load warning', {
-        profileError: profileError.message,
+    if (profileError || !profile) {
+      log('STEP-6', 'Profile not found', {
+        profileError: profileError?.message,
       })
-    } else {
-      log('STEP-6', 'Profile loaded', {
-        name: profile?.name,
-        city: profile?.city,
-        province: profile?.province,
+      return new Response(JSON.stringify({ error: 'Shipping profile not found' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
       })
     }
+
+    const shipName = trimField(profile.name)
+    const shipStreet = trimField(profile.address)
+    const shipCity = trimField(profile.city)
+    const shipState = trimField(profile.province)
+    const shipPostal = trimField(profile.postal_code)
+
+    const billName = trimField(profile.billing_name)
+    const billStreet = trimField(profile.billing_address)
+    const billCity = trimField(profile.billing_city)
+    const billState = trimField(profile.billing_province)
+    const billPostal = trimField(profile.billing_postal_code)
+
+    const missingShip = firstMissingField({
+      name: shipName,
+      address: shipStreet,
+      city: shipCity,
+      province: shipState,
+      postal_code: shipPostal,
+    })
+    if (missingShip) {
+      log('STEP-6', 'Shipping address incomplete', { missingShip })
+      return new Response(
+        JSON.stringify({ error: `Shipping address incomplete: ${missingShip}` }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      )
+    }
+
+    const missingBill = firstMissingField({
+      name: billName,
+      address: billStreet,
+      city: billCity,
+      province: billState,
+      postal_code: billPostal,
+    })
+    if (missingBill) {
+      log('STEP-6', 'Billing address incomplete', { missingBill })
+      return new Response(
+        JSON.stringify({ error: `Billing address incomplete: ${missingBill}` }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      )
+    }
+
+    log('STEP-6', 'Profile loaded', {
+      shipCity,
+      shipState,
+      billCity,
+      billState,
+      billingSameAsShipping: profile.billing_same_as_shipping,
+    })
+
+    const shipTo = buildAddressBlock(
+      shipName,
+      shipStreet,
+      shipCity,
+      shipState,
+      shipPostal,
+      user.email ?? '',
+    )
+    const billTo = buildAddressBlock(
+      billName,
+      billStreet,
+      billCity,
+      billState,
+      billPostal,
+      user.email ?? '',
+    )
 
     // STEP 7 — Create Mediaclip order with release=false
     log('STEP-7', 'Creating Mediaclip order', { orderId, projectId, amount })
@@ -278,22 +380,8 @@ Deno.serve(async (req) => {
           orderRequestHeader: {
             orderID: orderId,
             orderDate: new Date().toISOString(),
-            shipTo: {
-              address: {
-                postalAddress: {
-                  deliverTo: profile?.name || user.email,
-                  street: profile?.address || '',
-                  city: profile?.city || '',
-                  state: profile?.province || 'Québec',
-                  postalCode: profile?.postal_code || '',
-                  country: {
-                    isoCountryCode: 'CA',
-                    value: 'Canada',
-                  },
-                },
-                email: { value: user.email },
-              },
-            },
+            shipTo,
+            billTo,
             contacts: [
               {
                 role: 'buyer',

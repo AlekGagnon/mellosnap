@@ -525,9 +525,34 @@ class _MinimalCameraOverlay extends StatelessWidget {
           Positioned(
             bottom: 30,
             right: 24,
-            child: _SubtleIconButton(
-              icon: Icons.cameraswitch_rounded,
-              onPressed: flipEnabled ? onFlip : null,
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: IconButton(
+                onPressed: flipEnabled
+                    ? () => unawaited(onFlip())
+                    : null,
+                padding: EdgeInsets.zero,
+                style: IconButton.styleFrom(
+                  overlayColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: 0.25),
+                ).copyWith(
+                  foregroundColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.pressed)) {
+                      return _CameraColors.overlayIcon;
+                    }
+                    return Colors.white;
+                  }),
+                  backgroundColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.pressed)) {
+                      return Colors.transparent;
+                    }
+                    return Colors.white.withValues(alpha: 0.25);
+                  }),
+                ),
+                icon: const Icon(Icons.cameraswitch_rounded, size: 32),
+              ),
             ),
           ),
         Positioned(
