@@ -37,10 +37,17 @@ class _CameraPageState extends State<CameraPage> {
   bool _initializing = true;
   String? _error;
   bool _capturing = false;
+  bool _flashOn = false;
   int _lensIndex = 0;
   late List<String> _photoPaths;
 
   int get _taken => _photoPaths.length;
+
+  bool get _isBackCamera {
+    if (cameras.isEmpty) return false;
+    return cameras[_lensIndex % cameras.length].lensDirection ==
+        CameraLensDirection.back;
+  }
 
   bool get _canTakePhoto =>
       _taken < CameraPage.maxPhotos && !_capturing && !_initializing;
@@ -111,6 +118,16 @@ class _CameraPageState extends State<CameraPage> {
         await controller.dispose();
         return;
       }
+
+      if (camera.lensDirection == CameraLensDirection.front) {
+        _flashOn = false;
+      }
+      await _applyFlashMode(controller);
+
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
       setState(() {
         _controller = controller;
         _initializing = false;
@@ -128,7 +145,43 @@ class _CameraPageState extends State<CameraPage> {
   Future<void> _flipCamera() async {
     if (cameras.length < 2 || _capturing) return;
     _lensIndex = (_lensIndex + 1) % cameras.length;
+    if (!_isBackCamera) {
+      _flashOn = false;
+    }
     await _openCamera(_lensIndex);
+  }
+
+  Future<void> _applyFlashMode(CameraController controller) async {
+    try {
+      await controller.setFlashMode(
+        _flashOn ? FlashMode.always : FlashMode.off,
+      );
+    } on CameraException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.description ?? 'Flash is not available on this camera.',
+          ),
+        ),
+      );
+      if (_flashOn) {
+        setState(() => _flashOn = false);
+      }
+    }
+  }
+
+  void _toggleFlash() {
+    if (!_isBackCamera) return;
+    final controller = _controller;
+    if (controller == null ||
+        !controller.value.isInitialized ||
+        _capturing ||
+        _initializing) {
+      return;
+    }
+    setState(() => _flashOn = !_flashOn);
+    unawaited(_applyFlashMode(controller));
   }
 
   Future<Uint8List> _captureAndCropTo2x3(CameraController controller) async {
@@ -400,10 +453,14 @@ class _CameraPageState extends State<CameraPage> {
           final overlay = _MinimalCameraOverlay(
             photoCount: _taken,
             canFlip: cameras.length > 1,
-            flipEnabled: !_initializing,
+            flipEnabled: !_initializing && !_capturing,
+            showFlashToggle: _isBackCamera,
+            flashOn: _flashOn,
+            flashEnabled: !_initializing && !_capturing,
             canTakePhoto: _canTakePhoto,
             onExit: _confirmExit,
             onFlip: _flipCamera,
+            onToggleFlash: _toggleFlash,
             onTakePhoto: _takePhoto,
           );
 
@@ -479,18 +536,26 @@ class _MinimalCameraOverlay extends StatelessWidget {
     required this.photoCount,
     required this.canFlip,
     required this.flipEnabled,
+    required this.showFlashToggle,
+    required this.flashOn,
+    required this.flashEnabled,
     required this.canTakePhoto,
     required this.onExit,
     required this.onFlip,
+    required this.onToggleFlash,
     required this.onTakePhoto,
   });
 
   final int photoCount;
   final bool canFlip;
   final bool flipEnabled;
+  final bool showFlashToggle;
+  final bool flashOn;
+  final bool flashEnabled;
   final bool canTakePhoto;
   final Future<void> Function() onExit;
   final Future<void> Function() onFlip;
+  final VoidCallback onToggleFlash;
   final Future<void> Function() onTakePhoto;
 
   @override
@@ -521,38 +586,24 @@ class _MinimalCameraOverlay extends StatelessWidget {
             onPressed: onExit,
           ),
         ),
+        if (showFlashToggle)
+          Positioned(
+            top: 8,
+            right: 8,
+            child: _OverlayCircleIconButton(
+              icon: flashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+              enabled: flashEnabled,
+              onPressed: onToggleFlash,
+            ),
+          ),
         if (canFlip)
           Positioned(
             bottom: 30,
             right: 24,
-            child: SizedBox(
-              width: 44,
-              height: 44,
-              child: IconButton(
-                onPressed: flipEnabled
-                    ? () => unawaited(onFlip())
-                    : null,
-                padding: EdgeInsets.zero,
-                style: IconButton.styleFrom(
-                  overlayColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.white.withValues(alpha: 0.25),
-                ).copyWith(
-                  foregroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.pressed)) {
-                      return _CameraColors.overlayIcon;
-                    }
-                    return Colors.white;
-                  }),
-                  backgroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.pressed)) {
-                      return Colors.transparent;
-                    }
-                    return Colors.white.withValues(alpha: 0.25);
-                  }),
-                ),
-                icon: const Icon(Icons.cameraswitch_rounded, size: 32),
-              ),
+            child: _OverlayCircleIconButton(
+              icon: Icons.cameraswitch_rounded,
+              enabled: flipEnabled,
+              onPressed: () => unawaited(onFlip()),
             ),
           ),
         Positioned(
@@ -567,6 +618,49 @@ class _MinimalCameraOverlay extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _OverlayCircleIconButton extends StatelessWidget {
+  const _OverlayCircleIconButton({
+    required this.icon,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: IconButton(
+        onPressed: enabled ? onPressed : null,
+        padding: EdgeInsets.zero,
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.white.withValues(alpha: 0.25),
+        ).copyWith(
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return _CameraColors.overlayIcon;
+            }
+            return Colors.white;
+          }),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return Colors.transparent;
+            }
+            return Colors.white.withValues(alpha: 0.25);
+          }),
+        ),
+        icon: Icon(icon, size: 32),
+      ),
     );
   }
 }
