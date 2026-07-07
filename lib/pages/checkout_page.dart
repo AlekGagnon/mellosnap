@@ -383,9 +383,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           _BackToRoll(
                             enabled: !_isProcessing,
                             onPressed: () {
-                              Navigator.of(context)
-                                ..pop()
-                                ..pop();
+                              if (Navigator.of(context).canPop()) {
+                                Navigator.of(context).pop();
+                              }
                             },
                           ),
                           const SizedBox(height: 28),

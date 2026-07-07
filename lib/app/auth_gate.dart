@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../pages/home_page.dart';
 import '../pages/sign_in_page.dart';
 
-/// Route initiale selon session Supabase et état du rouleau actif.
+/// Route initiale selon session Supabase.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -21,54 +21,7 @@ class AuthGate extends StatelessWidget {
           return const SignInPage();
         }
 
-        return _AuthenticatedRouter(userId: session.user.id);
-      },
-    );
-  }
-}
-
-class _AuthenticatedRouter extends StatefulWidget {
-  const _AuthenticatedRouter({required this.userId});
-
-  final String userId;
-
-  @override
-  State<_AuthenticatedRouter> createState() => _AuthenticatedRouterState();
-}
-
-class _AuthenticatedRouterState extends State<_AuthenticatedRouter> {
-  late Future<Widget> _destinationFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _destinationFuture = _resolveDestination();
-  }
-
-  @override
-  void didUpdateWidget(covariant _AuthenticatedRouter oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.userId != widget.userId) {
-      _destinationFuture = _resolveDestination();
-    }
-  }
-
-  Future<Widget> _resolveDestination() async {
-    // Always land on home; user can resume an in-progress roll from there.
-    return const HomePage();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Widget>(
-      future: _destinationFuture,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        return snapshot.data!;
+        return const HomePage();
       },
     );
   }

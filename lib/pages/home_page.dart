@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../components/mello_logo.dart';
 import '../services/auth_service.dart';
 import '../services/roll_repository.dart';
+import '../services/roll_resume.dart';
 import 'camera_page.dart';
 import 'profile_page.dart';
 
@@ -27,11 +28,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<String> _activePhotoPaths = [];
+  ActiveRollState _activeRoll = const ActiveRollState(photoPaths: []);
   bool _loadingRoll = true;
 
-  bool get _hasIncompleteRoll =>
-      RollRepository.isRollIncomplete(_activePhotoPaths);
+  bool get _hasIncompleteRoll => _activeRoll.isIncomplete;
+
+  bool get _hasResumableRoll =>
+      _activeRoll.isIncomplete || _activeRoll.isComplete;
 
   @override
   void initState() {
@@ -46,10 +49,10 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    final paths = await RollRepository.loadActiveRoll(userId);
+    final state = await RollRepository.loadActiveRollState(userId);
     if (!mounted) return;
     setState(() {
-      _activePhotoPaths = paths;
+      _activeRoll = state;
       _loadingRoll = false;
     });
   }
@@ -65,7 +68,17 @@ class _HomePageState extends State<HomePage> {
     if (mounted) await _loadActiveRoll();
   }
 
+  Future<void> _resumeRoll() async {
+    await RollResume.navigate(context, _activeRoll);
+    if (mounted) await _loadActiveRoll();
+  }
+
   Future<void> _startNewRoll() async {
+    if (_hasResumableRoll) {
+      final discard = await RollResume.confirmDiscardRoll(context);
+      if (!discard || !mounted) return;
+    }
+
     final userId = AuthService.instance.currentUserId;
     if (userId != null) {
       await RollRepository.clearActiveRoll(userId);
@@ -92,12 +105,10 @@ class _HomePageState extends State<HomePage> {
                   const Spacer(flex: 3),
                   const _FeatureRow(),
                   const SizedBox(height: 28),
-                  if (!_loadingRoll && _hasIncompleteRoll) ...[
+                  if (!_loadingRoll && _hasResumableRoll) ...[
                     _ContinueRollButton(
-                      photoCount: _activePhotoPaths.length,
-                      onPressed: () => unawaited(
-                        _openCamera(initialPhotoPaths: _activePhotoPaths),
-                      ),
+                      label: RollResume.continueButtonLabel(_activeRoll),
+                      onPressed: () => unawaited(_resumeRoll()),
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -427,11 +438,11 @@ class _StartButton extends StatelessWidget {
 
 class _ContinueRollButton extends StatelessWidget {
   const _ContinueRollButton({
-    required this.photoCount,
+    required this.label,
     required this.onPressed,
   });
 
-  final int photoCount;
+  final String label;
   final VoidCallback onPressed;
 
   @override
@@ -445,7 +456,7 @@ class _ContinueRollButton extends StatelessWidget {
         foregroundColor: _HomeColors.accentDeep,
       ),
       child: Text(
-        'Continue roll ($photoCount / ${CameraPage.maxPhotos})',
+        label,
         style: GoogleFonts.lora(
           fontSize: 18,
           fontWeight: FontWeight.w600,

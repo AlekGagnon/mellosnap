@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -7,26 +8,32 @@ import 'package:google_fonts/google_fonts.dart';
 import '../components/mello_logo.dart';
 import '../services/auth_service.dart';
 import '../services/roll_repository.dart';
+import '../services/roll_resume.dart';
 import 'camera_page.dart';
 import 'choose_format_page.dart';
 import 'home_page.dart';
 
 /// Fin de rouleau : aperçu flouté (5 + tuile « +19 More »), envoi ou nouveau rouleau.
 ///
-/// Reçoit [photoPaths] depuis [CameraPage] après 24 captures.
-/// Navigation :
-/// - Send to print → [ChooseFormatPage]
-/// - Start a new roll → [HomePage] (pile vidée)
-class RollCompletePage extends StatelessWidget {
+/// Charge les photos depuis [RollRepository] ; [initialPhotoPaths] évite un flash
+/// vide quand on arrive depuis [CameraPage].
+class RollCompletePage extends StatefulWidget {
   const RollCompletePage({
     super.key,
-    required this.photoPaths,
+    this.initialPhotoPaths,
   });
 
-  final List<String> photoPaths;
+  final List<String>? initialPhotoPaths;
+
+  @override
+  State<RollCompletePage> createState() => _RollCompletePageState();
+}
+
+class _RollCompletePageState extends State<RollCompletePage> {
+  List<String> _photoPaths = [];
+  bool _loading = true;
 
   static const int totalPhotos = CameraPage.maxPhotos;
-  /// Nombre de miniatures verrouillées affichées avant la tuile « +N More ».
   static const int previewCount = 5;
   static const int moreCount = totalPhotos - previewCount;
 
@@ -38,71 +45,115 @@ class RollCompletePage extends StatelessWidget {
   static const _tile = Color(0xFFFFE4E1);
 
   @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialPhotoPaths;
+    if (initial != null && initial.length >= CameraPage.maxPhotos) {
+      _photoPaths = List.unmodifiable(initial);
+      _loading = false;
+    }
+    unawaited(_loadAndPersist());
+  }
+
+  Future<void> _loadAndPersist() async {
+    final userId = AuthService.instance.currentUserId;
+    if (userId == null) {
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
+
+    await RollRepository.setRollStage(userId, RollStage.complete);
+
+    if (_photoPaths.length >= CameraPage.maxPhotos) return;
+
+    final state = await RollRepository.loadActiveRollState(userId);
+    if (!mounted) return;
+    setState(() {
+      _photoPaths = state.photoPaths;
+      _loading = false;
+    });
+  }
+
+  Future<void> _sendToPrint() async {
+    final userId = AuthService.instance.currentUserId;
+    if (userId != null) {
+      await RollRepository.setRollStage(userId, RollStage.format);
+    }
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const ChooseFormatPage(),
+      ),
+    );
+  }
+
+  Future<void> _startNewRoll() async {
+    final discard = await RollResume.confirmDiscardRoll(context);
+    if (!discard || !mounted) return;
+
+    final userId = AuthService.instance.currentUserId;
+    if (userId != null) {
+      await RollRepository.clearActiveRoll(userId);
+    }
+    if (!mounted) return;
+    await Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute<void>(builder: (_) => const HomePage()),
+      (_) => false,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const MelloLogo(height: 40),
-              const SizedBox(height: 28),
-              Text(
-                'Roll complete!',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.lora(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w700,
-                  color: _ink,
-                  height: 1.15,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Your 24 photos are ready. Send them to print\nand we\'ll mail them to you.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.lora(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: _muted,
-                  height: 1.45,
-                ),
-              ),
-              const SizedBox(height: 28),
-              _PhotoGrid(photoPaths: photoPaths),
-              const SizedBox(height: 22),
-              const _InfoBanner(),
-              const SizedBox(height: 28),
-              _PrimaryButton(
-                label: 'Send to print',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ChooseFormatPage(),
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const MelloLogo(height: 40),
+                    const SizedBox(height: 28),
+                    Text(
+                      'Roll complete!',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lora(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w700,
+                        color: _ink,
+                        height: 1.15,
+                      ),
                     ),
-                  );
-                },
+                    const SizedBox(height: 14),
+                    Text(
+                      'Your 24 photos are ready. Send them to print\nand we\'ll mail them to you.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lora(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                        color: _muted,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    _PhotoGrid(photoPaths: _photoPaths),
+                    const SizedBox(height: 22),
+                    const _InfoBanner(),
+                    const SizedBox(height: 28),
+                    _PrimaryButton(
+                      label: 'Send to print',
+                      onPressed: () => unawaited(_sendToPrint()),
+                    ),
+                    const SizedBox(height: 14),
+                    _OutlineButton(
+                      label: 'Start a new roll',
+                      onPressed: () => unawaited(_startNewRoll()),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 14),
-              _OutlineButton(
-                label: 'Start a new roll',
-                onPressed: () async {
-                  final userId = AuthService.instance.currentUserId;
-                  if (userId != null) {
-                    await RollRepository.clearActiveRoll(userId);
-                  }
-                  if (!context.mounted) return;
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const HomePage()),
-                    (_) => false,
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -162,16 +213,16 @@ class _LockedPhotoTile extends StatelessWidget {
                 width: double.infinity,
                 height: double.infinity,
                 errorBuilder: (context, error, stackTrace) =>
-                    const ColoredBox(color: RollCompletePage._tile),
+                    const ColoredBox(color: _RollCompletePageState._tile),
               ),
             )
           else
-            const ColoredBox(color: RollCompletePage._tile),
+            const ColoredBox(color: _RollCompletePageState._tile),
           Container(color: Colors.white.withValues(alpha: 0.12)),
           const Center(
             child: Icon(
               Icons.lock_outline,
-              color: RollCompletePage._ink,
+              color: _RollCompletePageState._ink,
               size: 26,
             ),
           ),
@@ -203,20 +254,20 @@ class _MoreTile extends StatelessWidget {
                 width: double.infinity,
                 height: double.infinity,
                 errorBuilder: (context, error, stackTrace) =>
-                    const ColoredBox(color: RollCompletePage._tile),
+                    const ColoredBox(color: _RollCompletePageState._tile),
               ),
             )
           else
-            const ColoredBox(color: RollCompletePage._tile),
+            const ColoredBox(color: _RollCompletePageState._tile),
           Container(color: Colors.white.withValues(alpha: 0.18)),
           Center(
             child: Text(
-              '+${RollCompletePage.moreCount} More',
+              '+${_RollCompletePageState.moreCount} More',
               textAlign: TextAlign.center,
               style: GoogleFonts.lora(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: RollCompletePage._ink,
+                color: _RollCompletePageState._ink,
                 height: 1.2,
               ),
             ),
@@ -236,14 +287,20 @@ class _InfoBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: RollCompletePage._tile.withValues(alpha: 0.55),
+        color: _RollCompletePageState._tile.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: RollCompletePage._accent.withValues(alpha: 0.85)),
+        border: Border.all(
+          color: _RollCompletePageState._accent.withValues(alpha: 0.85),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, color: RollCompletePage._accentDeep, size: 22),
+          Icon(
+            Icons.info_outline,
+            color: _RollCompletePageState._accentDeep,
+            size: 22,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -252,7 +309,7 @@ class _InfoBanner extends StatelessWidget {
               style: GoogleFonts.lora(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: RollCompletePage._accentDeep,
+                color: _RollCompletePageState._accentDeep,
                 height: 1.4,
               ),
             ),
@@ -275,11 +332,11 @@ class _PrimaryButton extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: const LinearGradient(
-          colors: [RollCompletePage._accentDeep, RollCompletePage._accent],
+          colors: [_RollCompletePageState._accentDeep, _RollCompletePageState._accent],
         ),
         boxShadow: [
           BoxShadow(
-            color: RollCompletePage._accentDeep.withValues(alpha: 0.35),
+            color: _RollCompletePageState._accentDeep.withValues(alpha: 0.35),
             blurRadius: 10,
             offset: const Offset(0, 6),
           ),
@@ -321,9 +378,9 @@ class _OutlineButton extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(54),
-        side: const BorderSide(color: RollCompletePage._accent, width: 1.5),
+        side: const BorderSide(color: _RollCompletePageState._accent, width: 1.5),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        foregroundColor: RollCompletePage._accentDeep,
+        foregroundColor: _RollCompletePageState._accentDeep,
       ),
       child: Text(
         label,

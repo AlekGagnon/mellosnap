@@ -60,16 +60,18 @@ dev_dependencies:
 flutter_native_splash:
   color: "#FFF9F6"
   color_dark: "#FFF9F6"
-  image: lib/images/logo-text.png
+  image: lib/images/splash_icon.png
+  ios_content_mode: scaleAspectFit
   android_12:
     color: "#FFF9F6"
     color_dark: "#FFF9F6"
-    image: lib/images/logo-text.png
+    image: lib/images/splash_icon.png
+    icon_background_color: "#FFF9F6"
   android: true
   ios: true
   web: false
 
-# For information on the generic Dart part of this file, see the
+# For information on the generic Dart part of this file, see the/
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
@@ -83,6 +85,7 @@ flutter:
   assets:
     - .env
     - lib/images/logo-text.png
+    - lib/images/splash_icon.png
     - lib/images/icones_standard.svg
     - lib/images/icones_polaroid.svg
     - lib/images/icones_strip.svg

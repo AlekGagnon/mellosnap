@@ -241,7 +241,7 @@ class _CameraPageState extends State<CameraPage> {
         await Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
             builder: (_) => RollCompletePage(
-              photoPaths: List.unmodifiable(_photoPaths),
+              initialPhotoPaths: List.unmodifiable(_photoPaths),
             ),
           ),
         );
@@ -636,34 +636,51 @@ class _ShutterButtonState extends State<_ShutterButton>
 
   Future<void> _handleTap() async {
     if (!widget.enabled) return;
+    unawaited(_playPressAnimation());
+    unawaited(widget.onTakePhoto());
+  }
+
+  Future<void> _playPressAnimation() async {
+    if (!mounted) return;
     await _scaleController.forward();
+    if (!mounted) return;
     await _scaleController.reverse();
-    await widget.onTakePhoto();
   }
 
   @override
   Widget build(BuildContext context) {
+    const touchSize = 96.0;
+    const outerSize = 76.0;
+    const innerSize = 58.0;
+
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: widget.enabled ? _handleTap : null,
-      child: AnimatedOpacity(
-        opacity: widget.enabled ? 1 : 0.4,
-        duration: const Duration(milliseconds: 200),
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.5),
-            ),
-            alignment: Alignment.center,
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
+      child: SizedBox(
+        width: touchSize,
+        height: touchSize,
+        child: Center(
+          child: AnimatedOpacity(
+            opacity: widget.enabled ? 1 : 0.4,
+            duration: const Duration(milliseconds: 200),
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: Container(
+                width: outerSize,
+                height: outerSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                alignment: Alignment.center,
+                child: Container(
+                  width: innerSize,
+                  height: innerSize,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ),

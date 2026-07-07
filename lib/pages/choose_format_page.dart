@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,6 +30,19 @@ class ChooseFormatPage extends StatefulWidget {
 class _ChooseFormatPageState extends State<ChooseFormatPage> {
   int _selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_persistFormatStage());
+  }
+
+  Future<void> _persistFormatStage() async {
+    final userId = AuthService.instance.currentUserId;
+    if (userId != null) {
+      await RollRepository.setRollStage(userId, RollStage.format);
+    }
+  }
+
   /// Catalogues statiques ; prix en dollars pour l'affichage du total.
   static const _formats = [
     _FormatOption(
@@ -37,7 +52,7 @@ class _ChooseFormatPageState extends State<ChooseFormatPage> {
       iconAsset: 'lib/images/icones_standard.svg',
     ),
     _FormatOption(
-      title: 'Polaroid',
+      title: 'Retro print',
       subtitle: '3x3 - glossy',
       price: 15.99,
       iconAsset: 'lib/images/icones_polaroid.svg',
@@ -79,19 +94,20 @@ class _ChooseFormatPageState extends State<ChooseFormatPage> {
     final formatOption = _formats[_selectedIndex];
     final printFormat = OrderCheckout.formatFromTitle(formatOption.title);
     final subtotal = formatOption.price.toDouble();
+    final order = OrderCheckout(
+      formatTitle: formatOption.title,
+      formatSubtitle: formatOption.subtitle,
+      subtotal: subtotal,
+      rollId: rollId,
+      format: printFormat,
+    );
+
+    await RollRepository.saveCheckoutDraft(userId, order);
 
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => CheckoutPage(
-          order: OrderCheckout(
-            formatTitle: formatOption.title,
-            formatSubtitle: formatOption.subtitle,
-            subtotal: subtotal,
-            rollId: rollId,
-            format: printFormat,
-          ),
-        ),
+        builder: (_) => CheckoutPage(order: order),
       ),
     );
   }
