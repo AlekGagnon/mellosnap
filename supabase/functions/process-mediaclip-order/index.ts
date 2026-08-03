@@ -4,6 +4,8 @@ const MEDIACLIP_AUTH_HEADER = Deno.env.get('MEDIACLIP_AUTH_HEADER') ??
   'HubApi bWVsbG9zbmFwOjEubVM3c2dJZ253WkJSK2kraEFnZHg2anJuYUZ0WXFKMXZoRSszNXUwNC92VUVoQT09'
 const MEDIACLIP_STORE_ID = Deno.env.get('MEDIACLIP_STORE_ID') ?? 'mellosnap'
 const MEDIACLIP_REGION = Deno.env.get('MEDIACLIP_REGION') ?? 'eastus'
+const MEDIACLIP_FULFILLER_ID = Deno.env.get('MEDIACLIP_FULFILLER_ID') ??
+  'TON_FULFILLER_ID'
 const BASE_API = `https://api.${MEDIACLIP_REGION}.mediacliphub.com`
 const BASE_UPLOADS = `https://uploads.${MEDIACLIP_REGION}.mediacliphub.com`
 const BASE_PHOTOS = `https://photos.${MEDIACLIP_REGION}.mediacliphub.com`
@@ -367,7 +369,12 @@ Deno.serve(async (req) => {
     )
 
     // STEP 7 — Create Mediaclip order with release=false
-    log('STEP-7', 'Creating Mediaclip order', { orderId, projectId, amount })
+    log('STEP-7', 'Creating Mediaclip order', {
+      orderId,
+      projectId,
+      amount,
+      fulfillerId: MEDIACLIP_FULFILLER_ID,
+    })
     const createOrderRes = await fetch(
       `${BASE_API}/stores/${MEDIACLIP_STORE_ID}/orders?release=false`,
       {
@@ -410,6 +417,10 @@ Deno.serve(async (req) => {
               itemId: {
                 buyerPartId: format,
                 supplierPartAuxiliaryId: projectId,
+              },
+              supplierId: {
+                domain: 'fulfillerId',
+                value: MEDIACLIP_FULFILLER_ID,
               },
               quantity: 1,
               itemDetail: {

@@ -58,10 +58,10 @@ class _ChooseFormatPageState extends State<ChooseFormatPage> {
       iconAsset: 'lib/images/icones_polaroid.svg',
     ),
     _FormatOption(
-      title: 'strips',
-      subtitle: '4 photos each',
+      title: 'Large print',
+      subtitle: '5x7 - glossy',
       price: 14.99,
-      iconAsset: 'lib/images/icones_strip.svg',
+      iconAsset: 'lib/images/icones_strip.svg', // TODO: ajouter l'icône large print
     ),
   ];
 

@@ -44,6 +44,7 @@ dependencies:
   google_sign_in: ^6.2.1
   flutter_dotenv: ^6.0.1
   flutter_stripe: ^13.0.0
+  audioplayers: ^6.5.1
 
 dev_dependencies:
   flutter_test:
@@ -89,6 +90,7 @@ flutter:
     - lib/images/icones_standard.svg
     - lib/images/icones_polaroid.svg
     - lib/images/icones_strip.svg
+    - assets/sounds/shutter_click.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

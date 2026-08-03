@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'terms_page.dart';
+
 const _accent = Color(0xFFE8A399);
 const _accentDeep = Color(0xFFD8897E);
 const _ink = Color(0xFF3D2F33);
@@ -41,9 +43,9 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 32),
-                  _SettingsSection(
+                  const _SettingsSection(
                     title: 'Account',
-                    children: const [
+                    children: [
                       _SettingsRow(
                         icon: Icons.notifications_outlined,
                         label: 'Notifications',
@@ -59,11 +61,23 @@ class SettingsPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   _SettingsSection(
                     title: 'About',
-                    children: const [
-                      _SettingsRow(
+                    children: [
+                      const _SettingsRow(
                         icon: Icons.info_outline_rounded,
                         label: 'App version',
                         subtitle: '1.0.0',
+                      ),
+                      _SettingsRow(
+                        icon: Icons.description_outlined,
+                        label: 'Terms & Conditions',
+                        subtitle: 'Read our terms',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const TermsPage(),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -160,16 +174,18 @@ class _SettingsRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String subtitle;
+  final VoidCallback? onTap;
 
   const _SettingsRow({
     required this.icon,
     required this.label,
     required this.subtitle,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       child: Row(
         children: [
@@ -203,7 +219,23 @@ class _SettingsRow extends StatelessWidget {
               ],
             ),
           ),
+          if (onTap != null)
+            Icon(
+              Icons.chevron_right_rounded,
+              color: _muted.withValues(alpha: 0.7),
+            ),
         ],
+      ),
+    );
+
+    if (onTap == null) return row;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: row,
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -34,11 +35,13 @@ class _CameraColors {
 
 class _CameraPageState extends State<CameraPage> {
   CameraController? _controller;
+  final AudioPlayer _shutterPlayer = AudioPlayer();
   bool _initializing = true;
   String? _error;
   bool _capturing = false;
   bool _flashOn = false;
   int _lensIndex = 0;
+  Uint8List? _previewBytes;
   late List<String> _photoPaths;
 
   int get _taken => _photoPaths.length;
@@ -58,6 +61,7 @@ class _CameraPageState extends State<CameraPage> {
   void initState() {
     super.initState();
     _photoPaths = List<String>.from(widget.initialPhotoPaths);
+    unawaited(_configureShutterPlayer());
     unawaited(
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
@@ -68,6 +72,41 @@ class _CameraPageState extends State<CameraPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _initCamera();
     });
+  }
+
+  Future<void> _configureShutterPlayer() async {
+    try {
+      final ctx = AudioContext(
+        android: const AudioContextAndroid(
+          contentType: AndroidContentType.music,
+          usageType: AndroidUsageType.media,
+          audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+        ),
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playback,
+          options: {AVAudioSessionOptions.mixWithOthers},
+        ),
+      );
+      await AudioPlayer.global.setAudioContext(ctx);
+      await _shutterPlayer.setAudioContext(ctx);
+      await _shutterPlayer.setPlayerMode(PlayerMode.mediaPlayer);
+      await _shutterPlayer.setReleaseMode(ReleaseMode.stop);
+      await _shutterPlayer.setVolume(1.0);
+    } catch (e, st) {
+      debugPrint('Shutter audio setup failed: $e\n$st');
+    }
+  }
+
+  Future<void> _playShutterClick() async {
+    try {
+      await _shutterPlayer.stop();
+      await _shutterPlayer.play(
+        AssetSource('sounds/shutter_click.mp3'),
+        volume: 1.0,
+      );
+    } catch (e, st) {
+      debugPrint('Shutter sound failed: $e\n$st');
+    }
   }
 
   Future<void> _initCamera() async {
@@ -234,17 +273,40 @@ class _CameraPageState extends State<CameraPage> {
     if (_taken >= CameraPage.maxPhotos) return;
 
     setState(() => _capturing = true);
+    unawaited(_playShutterClick());
 
     try {
       final croppedBytes = await _captureAndCropTo2x3(controller);
+      if (!mounted) return;
 
-      if (mounted) {
-        setState(() => _capturing = false);
-      } else {
+      final willCompleteRoll = _taken + 1 >= CameraPage.maxPhotos;
+      setState(() => _previewBytes = croppedBytes);
+
+      final persistFuture = _persistPhoto(
+        croppedBytes,
+        navigateOnComplete: false,
+      );
+
+      await Future<void>.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+
+      setState(() {
+        _previewBytes = null;
         _capturing = false;
-      }
+      });
 
-      unawaited(_persistPhoto(croppedBytes));
+      await persistFuture;
+      if (!mounted) return;
+
+      if (willCompleteRoll && _photoPaths.length >= CameraPage.maxPhotos) {
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => RollCompletePage(
+              initialPhotoPaths: List.unmodifiable(_photoPaths),
+            ),
+          ),
+        );
+      }
     } on CameraException catch (e) {
       _releaseCapturing();
       if (!mounted) return;
@@ -263,12 +325,19 @@ class _CameraPageState extends State<CameraPage> {
   void _releaseCapturing() {
     if (!mounted) {
       _capturing = false;
+      _previewBytes = null;
       return;
     }
-    setState(() => _capturing = false);
+    setState(() {
+      _capturing = false;
+      _previewBytes = null;
+    });
   }
 
-  Future<void> _persistPhoto(Uint8List bytes) async {
+  Future<void> _persistPhoto(
+    Uint8List bytes, {
+    bool navigateOnComplete = true,
+  }) async {
     final userId = _userId;
     if (userId == null) {
       if (!mounted) return;
@@ -290,7 +359,8 @@ class _CameraPageState extends State<CameraPage> {
 
       setState(() => _photoPaths.add(filePath));
 
-      if (_photoPaths.length >= CameraPage.maxPhotos) {
+      if (navigateOnComplete &&
+          _photoPaths.length >= CameraPage.maxPhotos) {
         await Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
             builder: (_) => RollCompletePage(
@@ -350,6 +420,7 @@ class _CameraPageState extends State<CameraPage> {
     unawaited(
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
     );
+    unawaited(_shutterPlayer.dispose());
     _controller?.dispose();
     super.dispose();
   }
@@ -371,6 +442,7 @@ class _CameraPageState extends State<CameraPage> {
               Positioned.fill(child: _buildOrientedOverlay()),
             if (_initializing) const ColoredBox(color: Colors.black),
             if (_error != null) _buildError(),
+            if (_previewBytes != null) _CapturePreviewPopup(bytes: _previewBytes!),
           ],
         ),
       ),
@@ -531,6 +603,48 @@ class _CameraPageState extends State<CameraPage> {
   }
 }
 
+class _CapturePreviewPopup extends StatelessWidget {
+  const _CapturePreviewPopup({required this.bytes});
+
+  final Uint8List bytes;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Colors.black.withValues(alpha: 0.45),
+      child: Center(
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.92, end: 1),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          builder: (context, scale, child) {
+            return Transform.scale(scale: scale, child: child);
+          },
+          child: Material(
+            elevation: 10,
+            color: Colors.transparent,
+            clipBehavior: Clip.antiAlias,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).width * 0.72,
+                maxHeight: MediaQuery.sizeOf(context).height * 0.62,
+              ),
+              child: AspectRatio(
+                aspectRatio: CameraPage.captureAspectRatio,
+                child: Image.memory(
+                  bytes,
+                  fit: BoxFit.cover,
+                  gaplessPlayback: true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _MinimalCameraOverlay extends StatelessWidget {
   const _MinimalCameraOverlay({
     required this.photoCount,
@@ -644,7 +758,7 @@ class _OverlayCircleIconButton extends StatelessWidget {
         style: IconButton.styleFrom(
           overlayColor: Colors.transparent,
           foregroundColor: Colors.white,
-          backgroundColor: Colors.white.withValues(alpha: 0.25),
+          backgroundColor: Colors.transparent,
         ).copyWith(
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.pressed)) {
@@ -652,12 +766,7 @@ class _OverlayCircleIconButton extends StatelessWidget {
             }
             return Colors.white;
           }),
-          backgroundColor: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.pressed)) {
-              return Colors.transparent;
-            }
-            return Colors.white.withValues(alpha: 0.25);
-          }),
+          backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
         ),
         icon: Icon(icon, size: 32),
       ),
