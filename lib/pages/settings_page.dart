@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/notification_service.dart';
 import 'terms_page.dart';
 
 const _accent = Color(0xFFE8A399);
@@ -9,8 +12,59 @@ const _ink = Color(0xFF3D2F33);
 const _muted = Color(0xFF7A6569);
 
 /// Réglages de l'application (placeholder extensible).
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool _notificationsEnabled = false;
+  bool _notificationsLoading = true;
+  bool _notificationsBusy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadNotificationPref());
+  }
+
+  Future<void> _loadNotificationPref() async {
+    final enabled = await NotificationService.instance.notificationsEnabled;
+    if (!mounted) return;
+    setState(() {
+      _notificationsEnabled = enabled;
+      _notificationsLoading = false;
+    });
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    if (_notificationsBusy) return;
+    setState(() {
+      _notificationsBusy = true;
+      _notificationsEnabled = value;
+    });
+    await NotificationService.instance.setNotificationsEnabled(value);
+    final enabled = await NotificationService.instance.notificationsEnabled;
+    if (!mounted) return;
+    setState(() {
+      _notificationsEnabled = enabled;
+      _notificationsBusy = false;
+    });
+    if (value &&
+        !enabled &&
+        !NotificationService.instance.isConfigured) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Add ONESIGNAL_APP_ID to .env (see ONESIGNAL_SETUP.md).',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +97,22 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 32),
-                  const _SettingsSection(
+                  _SettingsSection(
                     title: 'Account',
                     children: [
-                      _SettingsRow(
+                      _SettingsToggleRow(
                         icon: Icons.notifications_outlined,
                         label: 'Notifications',
-                        subtitle: 'Coming soon',
+                        subtitle: _notificationsLoading
+                            ? 'Loading…'
+                            : (_notificationsEnabled
+                                ? 'Reminders for unfinished rolls'
+                                : 'Off'),
+                        value: _notificationsEnabled,
+                        enabled: !_notificationsLoading && !_notificationsBusy,
+                        onChanged: _toggleNotifications,
                       ),
-                      _SettingsRow(
+                      const _SettingsRow(
                         icon: Icons.lock_outline_rounded,
                         label: 'Privacy',
                         subtitle: 'Coming soon',
@@ -236,6 +297,70 @@ class _SettingsRow extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(18),
         child: row,
+      ),
+    );
+  }
+}
+
+class _SettingsToggleRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final bool value;
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  const _SettingsToggleRow({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: _accent.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 20, color: _accentDeep),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.lora(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: _ink,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.lora(fontSize: 13, color: _muted),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: value,
+            onChanged: enabled ? onChanged : null,
+            activeThumbColor: _accentDeep,
+          ),
+        ],
       ),
     );
   }

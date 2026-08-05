@@ -17,7 +17,7 @@
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials.
 2. Create **OAuth client ID** (Web application) — use this as `GOOGLE_WEB_CLIENT_ID` in `.env`.
-3. Create **OAuth client ID** (Android) with package `com.example.mellosnap` and your debug SHA-1:
+3. Create **OAuth client ID** (Android) with package `com.mellosnap.app` and your debug SHA-1:
    ```bash
    cd android && ./gradlew signingReport
    ```

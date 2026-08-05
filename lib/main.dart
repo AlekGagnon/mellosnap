@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/auth_gate.dart';
+import 'services/notification_service.dart';
 import 'services/payment_service.dart';
 
 /// Initialized at startup (same pattern as the reference `photo` project).
@@ -49,6 +50,7 @@ Future<void> main() async {
   }
 
   await PaymentService.initialize();
+  await NotificationService.instance.initialize();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

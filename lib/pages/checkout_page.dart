@@ -5,6 +5,7 @@ import '../components/mello_logo.dart';
 import '../models/order_checkout.dart';
 import '../services/auth_service.dart';
 import '../services/edge_function_service.dart';
+import '../services/notification_service.dart';
 import '../services/order_service.dart';
 import '../services/payment_service.dart';
 import '../services/profile_service.dart';
@@ -234,6 +235,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         amount: widget.order.total,
         taxes: widget.order.taxes,
       );
+      await NotificationService.instance.tagOrderStatus('pending');
 
       await RollStorageService.uploadActiveRoll(
         userId: userId,
@@ -271,6 +273,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         orderId: orderId,
         paymentIntentId: paymentIntentId,
       );
+      await NotificationService.instance.tagOrderStatus('paid');
 
       if (!mounted) return;
       _showLoadingDialog('Fulfilling your order...');

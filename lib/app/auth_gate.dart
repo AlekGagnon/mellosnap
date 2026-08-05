@@ -1,13 +1,59 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../pages/home_page.dart';
 import '../pages/sign_in_page.dart';
+import '../services/notification_service.dart';
 
 /// Route initiale selon session Supabase.
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  StreamSubscription<AuthState>? _authSub;
+  String? _linkedUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((state) {
+      unawaited(_syncOneSignal(state.session));
+    });
+    unawaited(
+      _syncOneSignal(Supabase.instance.client.auth.currentSession),
+    );
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _syncOneSignal(Session? session) async {
+    final user = session?.user;
+    if (user == null) {
+      if (_linkedUserId != null) {
+        _linkedUserId = null;
+        await NotificationService.instance.logoutUser();
+      }
+      return;
+    }
+
+    if (_linkedUserId == user.id) return;
+    _linkedUserId = user.id;
+    await NotificationService.instance.loginUser(
+      userId: user.id,
+      email: user.email,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

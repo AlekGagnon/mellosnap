@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -6,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../models/order_checkout.dart';
 import '../pages/camera_page.dart';
+import 'notification_service.dart';
 
 /// Étape du parcours après la capture (persistée dans le manifeste).
 enum RollStage {
@@ -190,6 +192,12 @@ class RollRepository {
 
     final updated = [...existingPaths, filePath];
     await _writeManifest(userId, updated);
+    unawaited(
+      NotificationService.instance.tagRollProgress(
+        photosTaken: updated.length,
+        rollStatus: isRollComplete(updated) ? 'complete' : 'in_progress',
+      ),
+    );
     return filePath;
   }
 
@@ -209,6 +217,12 @@ class RollRepository {
 
     final updated = [...existingPaths, filePath];
     await _writeManifest(userId, updated);
+    unawaited(
+      NotificationService.instance.tagRollProgress(
+        photosTaken: updated.length,
+        rollStatus: isRollComplete(updated) ? 'complete' : 'in_progress',
+      ),
+    );
     return filePath;
   }
 
@@ -228,6 +242,7 @@ class RollRepository {
       clearCheckoutDraft:
           stage != RollStage.checkout && checkoutDraft == null,
     );
+    unawaited(NotificationService.instance.tagRollStage(stage));
   }
 
   static Future<void> saveCheckoutDraft(
@@ -307,5 +322,6 @@ class RollRepository {
         await entity.delete(recursive: true);
       }
     }
+    unawaited(NotificationService.instance.clearRollTags());
   }
 }
