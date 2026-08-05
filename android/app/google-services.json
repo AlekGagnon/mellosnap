@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "394998052501",
+    "project_id": "mellosnap-4fa4a",
+    "storage_bucket": "mellosnap-4fa4a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:394998052501:android:0f227aa6f61f5a33f18d9c",
+        "android_client_info": {
+          "package_name": "com.example.mellosnap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2okntfpYm0LI5Vcx3rOPfG6QgaQY-7yM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:394998052501:android:2171ab140e831a22f18d9c",
+        "android_client_info": {
+          "package_name": "com.mellosnap.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2okntfpYm0LI5Vcx3rOPfG6QgaQY-7yM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
