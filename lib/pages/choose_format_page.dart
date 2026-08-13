@@ -61,7 +61,7 @@ class _ChooseFormatPageState extends State<ChooseFormatPage> {
       title: 'Large print',
       subtitle: '5x7 - glossy',
       price: 14.99,
-      iconAsset: 'lib/images/icones_strip.svg', // TODO: ajouter l'icône large print
+      iconAsset: 'lib/images/icones_large.svg',
     ),
   ];
 

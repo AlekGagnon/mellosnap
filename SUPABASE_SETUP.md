@@ -21,7 +21,8 @@
    ```bash
    cd android && ./gradlew signingReport
    ```
-4. Supabase → Authentication → Providers → Google: enable and paste Web client ID + secret.
+4. Create **OAuth client ID** (iOS) with bundle `com.mellosnap.app` — use as `GOOGLE_IOS_CLIENT_ID` in `.env` and `GIDClientID` in `ios/Runner/Info.plist`. Add the reversed client ID as a URL scheme.
+5. Supabase → Authentication → Providers → Google: enable and paste **Web** client ID + secret (not the iOS client).
 
 ### Apple (iOS)
 

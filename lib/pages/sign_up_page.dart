@@ -37,10 +37,12 @@ class _SignUpPageState extends State<SignUpPage> {
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
+      debugPrint('AUTH ERROR: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AuthService.friendlyError(e)),
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 12),
         ),
       );
     } finally {

@@ -41,6 +41,10 @@ app.*.map.json
 
 # Secrets
 .env
+android/key.properties
+android/app/upload-keystore.jks
+**/*.jks
+**/*.keystore
 
 # Android Studio will place build artifacts here
 /android/app/debug

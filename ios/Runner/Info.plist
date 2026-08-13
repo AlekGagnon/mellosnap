@@ -70,6 +70,8 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>GIDClientID</key>
+		<string>394998052501-e7oinm4e7j9qo3vp5qnq4urilkrnibde.apps.googleusercontent.com</string>
 		<key>CFBundleURLTypes</key>
 		<array>
 			<dict>
@@ -78,6 +80,14 @@
 				<key>CFBundleURLSchemes</key>
 				<array>
 					<string>io.supabase.mellosnap</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.394998052501-e7oinm4e7j9qo3vp5qnq4urilkrnibde</string>
 				</array>
 			</dict>
 		</array>

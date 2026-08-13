@@ -7,347 +7,361 @@ const _ink = Color(0xFF3D2F33);
 
 /// Colle ton texte légal ici. Les sauts de ligne sont conservés à l'affichage.
 const kTermsAndConditions = '''
-Terms & Conditions
+**Terms & Conditions**
 
+Article 1 — Publisher Identification
 
-Article 1 — Identification de l'éditeur
-
-L'Application MelloSnap est éditée par :
+The MelloSnap Application is published by:
 
 MelloSnap Inc.
-Siège social : Québec, Canada
-Courriel : support@mellosnap.com
+Registered office: Quebec, Canada
+Email: support@mellosnap.com
 
-L'Application est disponible sur Google Play Store et Apple App Store.
+The Application is available on the Google Play Store and Apple App Store.
 
+---
 
-Article 2 — Description du service
+Article 2 — Description of the Service
 
-MelloSnap est une application mobile qui reproduit l'expérience d'un appareil photo jetable numérique. Le service comprend :
+MelloSnap is a mobile application that recreates the experience of a digital disposable camera. The service includes:
 
-La possibilité pour l'utilisateur de prendre jusqu'à 24 photographies par « rouleau »
-Le verrouillage des photos pendant la durée du rouleau — aucune photo ne peut être consultée avant que le rouleau soit complet
-Le choix d'un format d'impression (Standard 4×6, Polaroid 3×3, Languette) à la fin du rouleau
-L'encaissement du paiement et l'envoi des photographies imprimées à l'adresse postale indiquée par l'utilisateur
-La livraison physique des impressions par voie postale
+- The ability for the user to take up to 24 photographs per "roll"
+- Photos are locked for the duration of the roll — no photo can be viewed until the roll is complete
+- The choice of a print format (Standard 4×6, Polaroid 3×3, Photo Strip) at the end of the roll
+- Payment processing and delivery of printed photographs to the postal address provided by the user
+- Physical delivery of prints by mail
 
-MelloSnap est un service transactionnel. Aucun abonnement mensuel n'est requis. Chaque commande est indépendante.
+MelloSnap is a transactional service. No monthly subscription is required. Each order is independent.
 
+---
 
-Article 3 — Conditions d'accès et inscription
+Article 3 — Access Conditions and Registration
 
-3.1 Âge minimum
+3.1 Minimum Age
 
-L'utilisation de MelloSnap est réservée aux personnes âgées de 13 ans ou plus. Les personnes âgées de 13 à 17 ans doivent obtenir le consentement d'un parent ou tuteur légal avant d'utiliser le service.
+Use of MelloSnap is restricted to persons aged 13 or older. Persons aged 13 to 17 must obtain the consent of a parent or legal guardian before using the service.
 
-3.2 Création d'un compte
+3.2 Account Creation
 
-L'accès à l'Application nécessite la création d'un compte. L'utilisateur peut s'inscrire via :
+Access to the Application requires the creation of an account. Users may register via:
 
-Adresse courriel et mot de passe
-Connexion avec un compte Google
+- Email address and password
+- Sign in with Google
 
-L'utilisateur s'engage à fournir des informations exactes, complètes et à jour lors de l'inscription. Il est responsable de la confidentialité de ses identifiants de connexion et de toutes les activités effectuées depuis son compte.
+The user agrees to provide accurate, complete, and up-to-date information when registering. The user is responsible for the confidentiality of their login credentials and all activities carried out from their account.
 
-3.3 Compte unique
+3.3 Single Account
 
-Chaque utilisateur ne peut créer qu'un seul compte personnel. La création de comptes multiples pour contourner des restrictions ou exploiter des offres promotionnelles est interdite et peut entraîner la suspension de tous les comptes concernés.
+Each user may only create one personal account. Creating multiple accounts to circumvent restrictions or take advantage of promotional offers is prohibited and may result in the suspension of all accounts involved.
 
+---
 
-Article 4 — Fonctionnement des rouleaux et des commandes
+Article 4 — How Rolls and Orders Work
 
-4.1 Prise de photos et verrouillage
+4.1 Taking Photos and Locking
 
-Chaque rouleau permet de prendre exactement 24 photographies. Une fois le rouleau démarré :
+Each roll allows exactly 24 photographs to be taken. Once the roll has started:
 
-Les photos prises ne sont pas accessibles à l'utilisateur pendant la durée du rouleau
-Il n'est pas possible de supprimer, retoucher ou filtrer les photos prises
-Un rouleau non complété (inférieur à 24 photos) ne peut pas être commandé
+- Photos taken are not accessible to the user for the duration of the roll
+- It is not possible to delete, edit, or filter photos taken
+- An incomplete roll (fewer than 24 photos) cannot be ordered
 
-MelloSnap ne garantit pas la qualité artistique des photographies résultant de l'utilisation de l'Application. La qualité dépend des conditions d'éclairage, de l'appareil utilisé et d'autres facteurs externes.
+MelloSnap does not guarantee the artistic quality of photographs taken using the Application. Quality depends on lighting conditions, the device used, and other external factors.
 
-4.2 Choix du format et commande
+4.2 Choosing a Format and Ordering
 
-À la complétion du rouleau, l'utilisateur choisit un format d'impression parmi :
+Upon completion of the roll, the user chooses a print format from:
 
-Standard 4×6 pouces — impression glossy
-Format Polaroid 3×3 pouces — impression glossy, bordure blanche
-Languette de photos — 4 photos en bande
+- Standard 4×6 inches — glossy print
+- Polaroid 3×3 inches — glossy print, white border
+- Photo Strip — 4 photos in a strip
 
-Des copies supplémentaires peuvent être commandées avec un rabais de 20 % sur le prix unitaire du format sélectionné (maximum 3 copies par commande).
+Additional copies may be ordered at a 20% discount off the unit price of the selected format (maximum 3 copies per order).
 
-4.3 Traitement de la commande
+4.3 Order Processing
 
-La commande est confirmée après validation du paiement. MelloSnap transmet ensuite les photographies à son partenaire d'impression Mediaclip pour impression et expédition. L'utilisateur ne peut plus modifier sa commande après confirmation du paiement.
+The order is confirmed after payment validation. MelloSnap then transmits the photographs to its print partner Mediaclip for printing and shipping. The user can no longer modify their order after payment is confirmed.
 
+---
 
-Article 5 — Prix, paiement et facturation
+Article 5 — Pricing, Payment, and Billing
 
-5.1 Prix
+5.1 Pricing
 
-Les prix affichés dans l'Application sont en dollars canadiens (CAD), taxes applicables comprises (TPS 5 % + TVQ 9,975 %). Les prix en vigueur au moment de la commande sont ceux indiqués lors du processus de paiement.
+Prices displayed in the Application are in Canadian dollars (CAD), including applicable taxes (GST 5% + QST 9.975%). Prices in effect at the time of the order are those shown during the payment process.
 
-À titre indicatif, les prix de base sont :
+For reference, base prices are:
 
-Standard 4×6 : 22,00 CAD par rouleau
-Format Polaroid 3×3 : 28,00  CAD par rouleau
-Languette : 18,00 CAD par rouleau
+- Standard 4×6: 12.99 CAD per roll
+- Polaroid 3×3: 15.99 CAD per roll
+- Large print: 14.99 CAD per roll
 
-MelloSnap se réserve le droit de modifier ses prix à tout moment. Les prix modifiés s'appliquent uniquement aux commandes passées après la date d'entrée en vigueur du changement.
+MelloSnap reserves the right to change its prices at any time. Updated prices apply only to orders placed after the effective date of the change.
 
-5.2 Livraison
+5.2 Shipping
 
-La livraison standard est incluse dans le prix de base. Aucun frais de livraison supplémentaire n'est facturé pour la livraison standard. Une option de livraison express peut être proposée moyennant un supplément de 6,00 CAD.
+Standard shipping is included in the base price. No additional shipping fee is charged for standard delivery. An express delivery option may be offered for an additional 6.00 CAD.
 
-5.3 Paiement
+5.3 Payment
 
-Les paiements sont traités de manière sécurisée par notre prestataire de paiement Stripe. MelloSnap accepte :
+Payments are securely processed by our payment provider Stripe. MelloSnap accepts:
 
-Les principales cartes de crédit et de débit (Visa, Mastercard)
-Google Pay
+- Major credit and debit cards (Visa, Mastercard)
+- Google Pay
 
-MelloSnap ne conserve pas les informations de votre carte de paiement. Ces données sont traitées directement par Stripe conformément aux normes PCI-DSS.
+MelloSnap does not store your payment card information. This data is processed directly by Stripe in accordance with PCI-DSS standards.
 
-5.4 Facturation
+5.4 Billing
 
-Un reçu de paiement est automatiquement envoyé à l'adresse courriel associée au compte de l'utilisateur après chaque commande confirmée.
+A payment receipt is automatically sent to the email address associated with the user's account after each confirmed order.
 
+---
 
-Article 6 — Livraison et délais
+Article 6 — Delivery and Timelines
 
-6.1 Zone de livraison
+6.1 Delivery Zone
 
-MelloSnap livre au Canada uniquement lors du lancement initial du service. L'extension à d'autres pays sera annoncée sur l'Application.
+MelloSnap delivers within Canada only at the initial launch of the service. Expansion to other countries will be announced in the Application.
 
-6.2 Délais de livraison
+6.2 Delivery Timelines
 
-Les délais de livraison estimés sont :
+Estimated delivery times are:
 
-Livraison standard : 7 à 10 jours ouvrables après confirmation de la commande
-Livraison express (si disponible) : 2 à 3 jours ouvrables
+- Standard delivery: 7 to 10 business days after order confirmation
+- Express delivery (if available): 2 to 3 business days
 
-Ces délais sont fournis à titre indicatif. MelloSnap ne peut être tenu responsable des retards causés par des facteurs extérieurs (grèves postales, conditions météorologiques, erreurs d'adresse fournies par l'utilisateur, etc.).
+These timelines are provided as estimates. MelloSnap cannot be held responsible for delays caused by external factors (postal strikes, weather conditions, address errors provided by the user, etc.).
 
-6.3 Adresse de livraison
+6.3 Delivery Address
 
-L'utilisateur est responsable de l'exactitude de l'adresse de livraison fournie. En cas d'erreur d'adresse entraînant la non-livraison ou la perte du colis, MelloSnap ne sera pas tenu de procéder à une réimpression ou à un remboursement, sauf en cas de faute avérée de sa part.
+The user is responsible for the accuracy of the delivery address provided. In the event of an address error resulting in non-delivery or loss of the package, MelloSnap will not be required to reprint or issue a refund, except in the case of proven fault on its part.
 
+---
 
-Article 7 — Politique de remboursement et de retour
+Article 7 — Refund and Return Policy
 
-7.1 Nature du produit
+7.1 Nature of the Product
 
-Les impressions photographiques sont des produits personnalisés fabriqués à la demande. En vertu des dispositions relatives aux biens confectionnés sur mesure, ces produits ne sont pas éligibles au droit de rétractation standard prévu par la loi sur la protection du consommateur.
+Photographic prints are personalized products made to order. Under the provisions relating to custom-made goods, these products are not eligible for the standard right of withdrawal provided by consumer protection law.
 
-7.2 Remboursement en cas de défaut
+7.2 Refunds for Defects
 
-MelloSnap accepte les demandes de remboursement ou de réimpression dans les cas suivants :
+MelloSnap accepts refund or reprint requests in the following cases:
 
-Produit endommagé à la livraison (photo requise dans les 7 jours suivant la réception)
-Erreur d'impression imputable à MelloSnap (couleurs erronées, format incorrect)
-Non-livraison après 21 jours ouvrables pour la livraison standard
+- Product damaged upon delivery (photo required within 7 days of receipt)
+- Printing error attributable to MelloSnap (incorrect colors, wrong format)
+- Non-delivery after 21 business days for standard delivery
 
-Pour soumettre une réclamation, l'utilisateur doit contacter support@mellosnap.com dans les délais indiqués, avec preuve de la commande et photos du défaut le cas échéant.
+To submit a claim, the user must contact support@mellosnap.com within the indicated timeframes, with proof of order and photos of the defect where applicable.
 
 7.3 Exclusions
 
-Ne donnent pas droit à un remboursement :
+The following do not give rise to a refund:
 
-La qualité artistique jugée insuffisante (flou, mauvaise lumière) — liée à la prise de vue
-Le changement d'avis après confirmation du paiement
-Les dommages causés par une manipulation inappropriée du colis à la réception
+- Artistic quality deemed insufficient (blur, poor lighting) — related to the user's photography
+- Change of mind after payment confirmation
+- Damage caused by improper handling of the package upon receipt
 
+---
 
-Article 8 — Propriété intellectuelle
+Article 8 — Intellectual Property
 
-8.1 Droits de MelloSnap
+8.1 MelloSnap's Rights
 
-L'Application, son interface, son design, ses algorithmes, son code source et ses marques constituent la propriété exclusive de MelloSnap Inc. Toute reproduction, modification, distribution ou utilisation commerciale non autorisée est interdite.
+The Application, its interface, design, algorithms, source code, and trademarks are the exclusive property of MelloSnap Inc. Any unauthorized reproduction, modification, distribution, or commercial use is prohibited.
 
-8.2 Droits des utilisateurs sur leurs photos
+8.2 Users' Rights Over Their Photos
 
-L'utilisateur conserve l'entière propriété des photographies qu'il prend via l'Application. MelloSnap n'acquiert aucun droit sur le contenu photographique de l'utilisateur, à l'exception des droits strictement nécessaires à la fourniture du service (stockage temporaire, traitement pour impression).
+The user retains full ownership of the photographs they take via the Application. MelloSnap does not acquire any rights over the user's photographic content, except for rights strictly necessary to provide the service (temporary storage, processing for printing).
 
-8.3 Licence d'utilisation accordée à MelloSnap
+8.3 License Granted to MelloSnap
 
-En utilisant le service, l'utilisateur accorde à MelloSnap une licence non exclusive, mondiale, gratuite et révocable pour :
+By using the service, the user grants MelloSnap a non-exclusive, worldwide, royalty-free, and revocable license to:
 
-Stocker les photographies dans nos serveurs sécurisés (Supabase) aux fins d'impression
-Transmettre les photographies à notre partenaire d'impression (Mediaclip) aux seules fins de production
-Supprimer les photographies de nos serveurs dans les 30 jours suivant la livraison confirmée
+- Store photographs on our secure servers (Supabase) for printing purposes
+- Transmit photographs to our print partner (Mediaclip) solely for production purposes
+- Delete photographs from our servers within 30 days of confirmed delivery
 
-MelloSnap ne vend pas, ne loue pas et ne partage pas les photographies des utilisateurs à des fins commerciales ou publicitaires.
+MelloSnap does not sell, rent, or share users' photographs for commercial or advertising purposes.
 
+---
 
-Article 9 — Protection des données personnelles
+Article 9 — Personal Data Protection
 
-9.1 Données collectées
+9.1 Data Collected
 
-MelloSnap collecte les données suivantes :
+MelloSnap collects the following data:
 
-Informations d'identification : nom, adresse courriel
-Adresse de livraison : rue, ville, province, code postal, pays
-Données de paiement : traitées exclusivement par Stripe (non stockées par MelloSnap)
-Photographies : stockées temporairement pour impression, supprimées après livraison
-Données d'utilisation : historique des commandes, date de création du compte
+- Identification information: name, email address
+- Delivery address: street, city, province, postal code, country
+- Payment data: processed exclusively by Stripe (not stored by MelloSnap)
+- Photographs: stored temporarily for printing, deleted after delivery
+- Usage data: order history, account creation date
 
-9.2 Finalités du traitement
+9.2 Purposes of Processing
 
-Les données sont utilisées pour :
+Data is used to:
 
-Créer et gérer votre compte utilisateur
-Traiter vos commandes et coordonner la livraison
-Vous envoyer les confirmations de commande et reçus de paiement
-Améliorer le service et prévenir la fraude
-Respecter nos obligations légales
+- Create and manage your user account
+- Process your orders and coordinate delivery
+- Send you order confirmations and payment receipts
+- Improve the service and prevent fraud
+- Comply with our legal obligations
 
-9.3 Base légale
+9.3 Legal Basis
 
-Le traitement de vos données personnelles est basé sur : l'exécution du contrat (traitement des commandes), votre consentement (communications marketing), et nos obligations légales.
+The processing of your personal data is based on: contract performance (order processing), your consent (marketing communications), and our legal obligations.
 
-9.4 Conservation
+9.4 Retention
 
-Les données de compte sont conservées pendant la durée de votre inscription et jusqu'à 3 ans après la clôture du compte. Les photographies sont supprimées dans les 30 jours suivant la livraison. Les données de facturation sont conservées 7 ans conformément aux obligations fiscales.
+Account data is retained for the duration of your registration and up to 3 years after account closure. Photographs are deleted within 30 days of delivery. Billing data is retained for 7 years in accordance with tax obligations.
 
-9.5 Vos droits
+9.5 Your Rights
 
-Conformément à la Loi 25 (Québec) et aux lois applicables sur la protection des données, vous disposez des droits suivants :
+In accordance with Law 25 (Quebec) and applicable data protection laws, you have the following rights:
 
-Droit d'accès à vos données personnelles
-Droit de rectification des données inexactes
-Droit à l'effacement (« droit à l'oubli »)
-Droit à la portabilité de vos données
-Droit de retirer votre consentement à tout moment
+- Right of access to your personal data
+- Right to rectification of inaccurate data
+- Right to erasure ("right to be forgotten")
+- Right to data portability
+- Right to withdraw your consent at any time
 
-Pour exercer ces droits, contactez notre responsable de la protection des données à : privacy@mellosnap.com
+To exercise these rights, contact our data protection officer at: privacy@mellosnap.com
 
-9.6 Partenaires tiers
+9.6 Third-Party Partners
 
-MelloSnap fait appel aux partenaires suivants pour la fourniture du service :
+MelloSnap uses the following partners to provide the service:
 
-Supabase Inc. — hébergement de la base de données et du stockage (serveurs en Amérique du Nord)
-Stripe Inc. — traitement des paiements
-Mediaclip — impression et expédition des commandes
+- Supabase Inc. — database and storage hosting (servers in North America)
+- Stripe Inc. — payment processing
+- Mediaclip — printing and order fulfillment
 
-Chacun de ces partenaires est soumis à des obligations contractuelles de confidentialité et de sécurité.
+Each of these partners is subject to contractual confidentiality and security obligations.
 
+---
 
-Article 10 — Suppression du compte
+Article 10 — Account Deletion
 
-L'utilisateur peut supprimer son compte à tout moment depuis les paramètres de l'Application (Compte → Supprimer mon compte). La suppression du compte entraîne :
+The user may delete their account at any time from the Application settings (Account → Delete my account). Account deletion results in:
 
-La suppression de toutes les données personnelles dans un délai de 30 jours
-L'annulation de tout rouleau en cours (non remboursable si en cours de traitement)
-La conservation des données de facturation pendant 7 ans conformément aux obligations fiscales
+- Deletion of all personal data within 30 days
+- Cancellation of any ongoing roll (non-refundable if currently being processed)
+- Retention of billing data for 7 years in accordance with tax obligations
 
-Conformément aux exigences d'Apple App Store et Google Play, la suppression du compte est disponible directement dans l'Application sans nécessiter de contacter le support.
+In accordance with Apple App Store and Google Play requirements, account deletion is available directly in the Application without needing to contact support.
 
+---
 
-Article 11 — Responsabilités et limitations
+Article 11 — Liability and Limitations
 
-11.1 Limitations de responsabilité de MelloSnap
+11.1 MelloSnap's Liability Limitations
 
-MelloSnap s'engage à fournir le service avec le soin raisonnable attendu d'un prestataire professionnel. Cependant, MelloSnap ne peut être tenu responsable :
+MelloSnap undertakes to provide the service with the reasonable care expected of a professional provider. However, MelloSnap cannot be held liable for:
 
-Des dommages indirects, consécutifs ou immatériels (perte de revenus, perte de données, etc.)
-Des interruptions de service dues à des causes extérieures (panne d'infrastructure tierce, cas de force majeure)
-De la qualité artistique des photographies liée à la prise de vue de l'utilisateur
-Des retards de livraison imputables à des services postaux tiers
+- Indirect, consequential, or immaterial damages (loss of revenue, loss of data, etc.)
+- Service interruptions due to external causes (third-party infrastructure failure, force majeure)
+- The artistic quality of photographs related to the user's photography
+- Delivery delays attributable to third-party postal services
 
-11.2 Responsabilité de l'utilisateur
+11.2 User Responsibility
 
-L'utilisateur est responsable :
+The user is responsible for:
 
-De l'exactitude des informations fournies lors de l'inscription et des commandes
-Du contenu des photographies prises via l'Application
-De la sécurité de ses identifiants de connexion
-Du respect des présentes CGU et des lois applicables
+- The accuracy of information provided during registration and orders
+- The content of photographs taken via the Application
+- The security of their login credentials
+- Compliance with these Terms and applicable laws
 
-11.3 Contenu interdit
+11.3 Prohibited Content
 
-Il est strictement interdit d'utiliser MelloSnap pour prendre ou commander l'impression de photographies :
+It is strictly prohibited to use MelloSnap to take or order prints of photographs:
 
-À caractère sexuel impliquant des personnes mineures
-Portant atteinte aux droits à l'image ou à la vie privée de tiers sans leur consentement
-À caractère haineux, discriminatoire ou incitant à la violence
-Violant les droits d'auteur ou droits de propriété intellectuelle de tiers
+- Of a sexual nature involving minors
+- Infringing on the image rights or privacy of third parties without their consent
+- Of a hateful, discriminatory, or violence-inciting nature
+- Violating the copyright or intellectual property rights of third parties
 
-MelloSnap se réserve le droit de refuser d'imprimer tout contenu contraire aux présentes dispositions et de suspendre le compte concerné sans remboursement.
+MelloSnap reserves the right to refuse to print any content contrary to these provisions and to suspend the relevant account without refund.
 
+---
 
-Article 12 — Modifications du service et des CGU
+Article 12 — Modifications to the Service and Terms
 
-12.1 Modifications du service
+12.1 Service Modifications
 
-MelloSnap se réserve le droit de modifier, suspendre ou interrompre tout ou partie du service à tout moment, avec ou sans préavis. En cas d'interruption définitive du service, les commandes en cours seront remboursées.
+MelloSnap reserves the right to modify, suspend, or discontinue all or part of the service at any time, with or without notice. In the event of permanent discontinuation of the service, pending orders will be refunded.
 
-12.2 Modifications des CGU
+12.2 Terms Modifications
 
-Les présentes CGU peuvent être modifiées à tout moment. En cas de modification substantielle, MelloSnap en informera les utilisateurs par courriel ou via une notification dans l'Application au moins 30 jours avant l'entrée en vigueur des modifications. La poursuite de l'utilisation du service après cette date vaut acceptation des nouvelles CGU.
+These Terms may be modified at any time. In the event of a material change, MelloSnap will notify users by email or via a notification in the Application at least 30 days before the changes take effect. Continued use of the service after that date constitutes acceptance of the new Terms.
 
+---
 
-Article 13 — Suspension et résiliation
+Article 13 — Suspension and Termination
 
-MelloSnap se réserve le droit de suspendre ou résilier l'accès d'un utilisateur sans préavis et sans remboursement en cas de :
+MelloSnap reserves the right to suspend or terminate a user's access without notice and without refund in the event of:
 
-Violation des présentes CGU
-Utilisation frauduleuse du service
-Comportement abusif envers le service à la clientèle
-Tentative de contournement des systèmes de sécurité
+- Violation of these Terms
+- Fraudulent use of the service
+- Abusive behavior toward customer support
+- Attempts to circumvent security systems
 
-En cas de suspension injustifiée, l'utilisateur peut contacter support@mellosnap.com pour contester la décision.
+In the event of unjustified suspension, the user may contact support@mellosnap.com to contest the decision.
 
+---
 
-Article 14 — Droit applicable et règlement des litiges
+Article 14 — Governing Law and Dispute Resolution
 
-14.1 Droit applicable
+14.1 Governing Law
 
-Les présentes CGU sont régies par le droit de la province de Québec (Canada) et les lois fédérales canadiennes applicables, incluant notamment la Loi sur la protection du consommateur (LPC) et la Loi 25 sur la protection des renseignements personnels.
+These Terms are governed by the law of the province of Quebec (Canada) and applicable Canadian federal laws, including in particular the Consumer Protection Act (CPA) and Law 25 on the protection of personal information.
 
-14.2 Règlement amiable
+14.2 Amicable Resolution
 
-En cas de litige relatif à l'utilisation du service, l'utilisateur est invité à contacter MelloSnap en premier lieu à l'adresse support@mellosnap.com. MelloSnap s'engage à répondre dans un délai de 5 jours ouvrables et à rechercher une solution amiable.
+In the event of a dispute relating to the use of the service, the user is invited to contact MelloSnap first at support@mellosnap.com. MelloSnap undertakes to respond within 5 business days and to seek an amicable solution.
 
-14.3 Juridiction compétente
+14.3 Competent Jurisdiction
 
-À défaut de résolution amiable, tout litige sera soumis à la compétence exclusive des tribunaux de la province de Québec, Canada.
+Failing amicable resolution, any dispute will be subject to the exclusive jurisdiction of the courts of the province of Quebec, Canada.
 
-14.4 Protection des consommateurs québécois
+14.4 Quebec Consumer Protection
 
-Rien dans les présentes CGU ne vise à limiter les droits dont bénéficient les consommateurs québécois en vertu de la Loi sur la protection du consommateur du Québec.
+Nothing in these Terms is intended to limit the rights enjoyed by Quebec consumers under the Quebec Consumer Protection Act.
 
+---
 
-Article 15 — Dispositions diverses
+Article 15 — Miscellaneous Provisions
 
-15.1 Intégralité de l'accord
+15.1 Entire Agreement
 
-Les présentes CGU, ainsi que la Politique de confidentialité et tout contrat de commande conclu via l'Application, constituent l'intégralité de l'accord entre l'utilisateur et MelloSnap concernant l'utilisation du service.
+These Terms, along with the Privacy Policy and any order agreement concluded through the Application, constitute the entire agreement between the user and MelloSnap regarding use of the service.
 
-15.2 Divisibilité
+15.2 Severability
 
-Si une disposition des présentes CGU est jugée invalide ou inapplicable, les autres dispositions demeurent en vigueur.
+If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions will remain in effect.
 
-15.3 Absence de renonciation
+15.3 No Waiver
 
-Le fait pour MelloSnap de ne pas exercer un droit prévu par les présentes CGU ne constitue pas une renonciation à ce droit.
+MelloSnap's failure to exercise any right provided for in these Terms does not constitute a waiver of that right.
 
-15.4 Cession
+15.4 Assignment
 
-L'utilisateur ne peut céder ses droits ou obligations au titre des présentes CGU sans l'accord préalable écrit de MelloSnap. MelloSnap peut céder ses droits et obligations à un tiers (notamment en cas d'acquisition par une autre société) sous réserve d'en informer les utilisateurs.
+The user may not assign their rights or obligations under these Terms without MelloSnap's prior written consent. MelloSnap may assign its rights and obligations to a third party (including in the event of acquisition by another company) subject to notifying users.
 
+---
 
-Article 16 — Contact et service à la clientèle
+Article 16 — Contact and Customer Service
 
-Pour toute question, réclamation ou demande relative aux présentes CGU ou à l'utilisation de l'Application :
+For any questions, complaints, or requests relating to these Terms or the use of the Application:
 
 MelloSnap Inc.
-Courriel : alekmediaclip@gmail.com
-Délai de réponse : 2 à 5 jours ouvrables
+Email: alekmediaclip@gmail.com
+Response time: 2 to 5 business days
 
-Pour les questions relatives à la protection des données personnelles :
-Courriel : alekmediaclip@gmail.com
+For questions relating to personal data protection:
+Email: alekmediaclip@gmail.com
 
-MelloSnap Inc. — Conditions Générales d'Utilisation v1.0 — Juillet 2026
+MelloSnap Inc. — Terms & Conditions v1.0 — July 2026
 ''';
 
 /// Affiche les conditions d'utilisation en lecture seule, style Settings.

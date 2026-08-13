@@ -26,6 +26,7 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   void _showAuthError(Object error) {
+    debugPrint('AUTH ERROR: $error');
     final message = AuthService.friendlyError(error);
     final messenger = ScaffoldMessenger.of(context);
 
@@ -47,6 +48,7 @@ class _SignInPageState extends State<SignInPage> {
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 12),
       ),
     );
   }
